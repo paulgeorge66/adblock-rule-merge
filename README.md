@@ -19,6 +19,16 @@ dist/build-report.json
 https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list
 ```
 
+Shadowrocket 分片测试链接：
+
+```text
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part1.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part2.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part3.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part4.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part5.list
+```
+
 `dist/reject.list` 使用纯文本规则列表格式，每行一条两段式规则：
 
 ```text
@@ -155,7 +165,8 @@ CI 会执行：
 1. 安装依赖
 2. 运行测试
 3. 构建 `dist/reject.list`
-4. 如果生成文件发生变化，自动提交更新 `dist/reject.list` 和 `dist/build-report.json`
+4. 构建 5 个 Shadowrocket 分片文件，每个小于 3 MiB
+5. 如果生成文件发生变化，自动提交更新 `dist/`
 
 ## 许可证
 

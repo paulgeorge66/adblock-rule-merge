@@ -18,6 +18,9 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCES = ROOT / "sources.yaml"
 DEFAULT_OUTPUT = ROOT / "dist" / "reject.list"
 DEFAULT_REPORT = ROOT / "dist" / "build-report.json"
+DEFAULT_SHADOWROCKET_DIR = ROOT / "dist" / "shadowrocket"
+SHADOWROCKET_PART_COUNT = 5
+SHADOWROCKET_MAX_BYTES = 3_000_000
 
 CIDR_V4_RE = re.compile(r"^\d+\.\d+\.\d+\.\d+/\d+$")
 CIDR_V6_RE = re.compile(r"^[0-9a-fA-F:]+/\d+$")
@@ -238,6 +241,30 @@ def render_rule_provider_text(rules: Iterable[ParsedRule]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_shadowrocket_rule_text(rules: Iterable[ParsedRule]) -> str:
+    lines = [f"{rule.render()},REJECT" for rule in rules]
+    return "\n".join(lines) + "\n"
+
+
+def split_rendered_lines(lines: list[str], part_count: int, max_bytes: int) -> list[str]:
+    parts: list[list[str]] = [[] for _ in range(part_count)]
+    part_sizes = [0 for _ in range(part_count)]
+    current_part = 0
+
+    for line in lines:
+        line_size = len(line.encode("utf-8"))
+        if line_size > max_bytes:
+            raise ValueError(f"single rendered rule exceeds max part size: {line.strip()}")
+        if parts[current_part] and part_sizes[current_part] + line_size > max_bytes:
+            current_part += 1
+            if current_part >= part_count:
+                raise ValueError(f"rendered rules exceed {part_count} parts of {max_bytes} bytes")
+        parts[current_part].append(line)
+        part_sizes[current_part] += line_size
+
+    return ["".join(part) for part in parts]
+
+
 def load_sources(path: Path) -> list[dict]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict) or not isinstance(data.get("sources"), list):
@@ -245,14 +272,35 @@ def load_sources(path: Path) -> list[dict]:
     return data["sources"]
 
 
+def write_shadowrocket_parts(rules: list[ParsedRule], output_dir: Path) -> list[dict]:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    lines = [f"{rule.render()},REJECT\n" for rule in rules]
+    parts = split_rendered_lines(lines, part_count=SHADOWROCKET_PART_COUNT, max_bytes=SHADOWROCKET_MAX_BYTES)
+    part_reports: list[dict] = []
+
+    for index, text in enumerate(parts, start=1):
+        path = output_dir / f"reject-part{index}.list"
+        path.write_text(text, encoding="utf-8", newline="\n")
+        part_reports.append(
+            {
+                "path": str(path.relative_to(ROOT)).replace("\\", "/"),
+                "bytes": len(text.encode("utf-8")),
+                "rules": len([line for line in text.splitlines() if line]),
+            }
+        )
+
+    return part_reports
+
+
 def write_outputs(rules: list[ParsedRule], report: dict, output: Path, report_path: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(render_rule_provider_text(rules), encoding="utf-8", newline="\n")
+    report["shadowrocket_parts"] = write_shadowrocket_parts(rules, DEFAULT_SHADOWROCKET_DIR)
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Merge public adblock rules into a Mihomo rule-provider YAML.")
+    parser = argparse.ArgumentParser(description="Merge public adblock rules into text rule lists.")
     parser.add_argument("--sources", type=Path, default=DEFAULT_SOURCES)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)

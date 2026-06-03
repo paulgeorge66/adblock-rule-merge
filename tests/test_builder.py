@@ -9,7 +9,9 @@ from adblock_merge.builder import (
     normalize_rule_line,
     parse_rules,
     prune_shadowed_rules,
+    render_shadowrocket_rule_text,
     render_rule_provider_text,
+    split_rendered_lines,
 )
 
 
@@ -87,6 +89,31 @@ bad_label_.example.com
             rendered,
             "DOMAIN-SUFFIX,example.com\nDOMAIN-KEYWORD,tracker\n",
         )
+
+    def test_render_shadowrocket_rule_text_adds_reject_policy(self):
+        rendered = render_shadowrocket_rule_text(
+            [
+                ParsedRule("DOMAIN-SUFFIX", "example.com"),
+                ParsedRule("DOMAIN-KEYWORD", "tracker"),
+            ]
+        )
+        self.assertEqual(
+            rendered,
+            "DOMAIN-SUFFIX,example.com,REJECT\nDOMAIN-KEYWORD,tracker,REJECT\n",
+        )
+
+    def test_split_rendered_lines_keeps_each_part_under_limit(self):
+        lines = [
+            "DOMAIN-SUFFIX,a.example,REJECT\n",
+            "DOMAIN-SUFFIX,b.example,REJECT\n",
+            "DOMAIN-SUFFIX,c.example,REJECT\n",
+            "DOMAIN-SUFFIX,d.example,REJECT\n",
+            "DOMAIN-SUFFIX,e.example,REJECT\n",
+        ]
+        parts = split_rendered_lines(lines, part_count=3, max_bytes=70)
+        self.assertEqual(len(parts), 3)
+        self.assertTrue(all(len(part.encode("utf-8")) <= 70 for part in parts))
+        self.assertEqual("".join(parts), "".join(lines))
 
     def test_build_rules_from_sources_uses_local_fixture_urls(self):
         with tempfile.TemporaryDirectory() as tmp:
