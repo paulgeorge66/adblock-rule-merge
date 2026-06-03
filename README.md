@@ -57,7 +57,7 @@ rules:
 如果客户端支持 JavaScript 覆写脚本，可以用下面的方式自动加入 rule-provider，并把去广告规则插到规则列表前面：
 
 ```javascript
-const main = (config) => {
+function main(config) {
   const providerName = "adblock";
   const providerUrl = "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list";
   const providerPath = "./ruleset/adblock.list";
@@ -87,7 +87,7 @@ const main = (config) => {
   }
 
   return config;
-};
+}
 ```
 
 ## 规则来源
