@@ -47,26 +47,24 @@ rules:
 如果客户端支持 JavaScript 覆写脚本，可以用下面的方式自动加入 rule-provider，并把去广告规则插到规则列表前面：
 
 ```javascript
-const AD_RULE_PROVIDER = {
-  name: "adblock",
-  url: "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list",
-  path: "./ruleset/adblock.list",
-};
-
 const main = (config) => {
+  const providerName = "adblock";
+  const providerUrl = "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list";
+  const providerPath = "./ruleset/adblock.list";
+
   config["rule-providers"] = config["rule-providers"] || {};
   config.rules = config.rules || [];
 
-  config["rule-providers"][AD_RULE_PROVIDER.name] = {
+  config["rule-providers"][providerName] = {
     type: "http",
     behavior: "classical",
     format: "text",
-    url: AD_RULE_PROVIDER.url,
-    path: AD_RULE_PROVIDER.path,
+    url: providerUrl,
+    path: providerPath,
     interval: 86400,
   };
 
-  const adblockRule = "RULE-SET," + AD_RULE_PROVIDER.name + ",REJECT";
+  const adblockRule = "RULE-SET," + providerName + ",REJECT";
   const upperRules = config.rules.map((rule) => String(rule).toUpperCase().trim());
 
   if (!upperRules.includes(adblockRule.toUpperCase())) {
