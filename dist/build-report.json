@@ -2,23 +2,23 @@
   "sources": {
     "adguard_base_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt",
-      "parsed_rules": 73653
+      "parsed_rules": 73731
     },
     "adguard_chinese_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt",
-      "parsed_rules": 10966
+      "parsed_rules": 10969
     },
     "adguard_mobile_ads_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt",
-      "parsed_rules": 932
+      "parsed_rules": 933
     },
     "adguard_dns_filter": {
       "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-      "parsed_rules": 159611
+      "parsed_rules": 159697
     },
     "adrules_dns_list": {
       "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt",
-      "parsed_rules": 179537
+      "parsed_rules": 179658
     },
     "cjx_annoyance_list": {
       "url": "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
@@ -26,7 +26,7 @@
     },
     "easylist": {
       "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
-      "parsed_rules": 58197
+      "parsed_rules": 58291
     },
     "easylist_china": {
       "url": "https://easylist-downloads.adblockplus.org/easylistchina.txt",
@@ -50,47 +50,47 @@
     },
     "dns_blocklists_light": {
       "url": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt",
-      "parsed_rules": 70274
+      "parsed_rules": 70279
     },
     "oisd_basic": {
       "url": "https://abp.oisd.nl/basic/",
-      "parsed_rules": 58364
+      "parsed_rules": 58458
     },
     "stevenblack_hosts": {
       "url": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
-      "parsed_rules": 83042
+      "parsed_rules": 83596
     },
     "pollock_hosts": {
       "url": "https://someonewhocares.org/hosts/hosts",
-      "parsed_rules": 12805
+      "parsed_rules": 12811
     }
   },
-  "total_rules": 321737,
+  "total_rules": 322270,
   "shadowrocket_parts": [
     {
       "path": "dist/shadowrocket/reject-part1.module",
-      "bytes": 2999988,
-      "rules": 72384
+      "bytes": 2999976,
+      "rules": 72391
     },
     {
       "path": "dist/shadowrocket/reject-part2.module",
-      "bytes": 2999971,
-      "rules": 72475
+      "bytes": 2999989,
+      "rules": 72474
     },
     {
       "path": "dist/shadowrocket/reject-part3.module",
-      "bytes": 2999962,
-      "rules": 72613
+      "bytes": 2999976,
+      "rules": 72606
     },
     {
       "path": "dist/shadowrocket/reject-part4.module",
-      "bytes": 2999967,
-      "rules": 72016
+      "bytes": 2999985,
+      "rules": 72034
     },
     {
       "path": "dist/shadowrocket/reject-part5.module",
-      "bytes": 1346400,
-      "rules": 32249
+      "bytes": 1369364,
+      "rules": 32765
     }
   ]
 }
