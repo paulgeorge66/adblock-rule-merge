@@ -1,19 +1,19 @@
 # Adblock Rule Merge
 
-Merge public adblock rules into one clean Mihomo rule-provider YAML.
+公开去广告规则合并器。项目会从多个公开上游规则源拉取数据，提取可用于 Mihomo/Clash 的域名级拦截规则，去重整理后生成一个 `reject.yaml`。
 
-This project is intentionally small: it only builds reject/adblock rules. It does not contain proxy nodes, private subscription templates, server publish scripts, or personal overrides.
+这个项目只做去广告规则整理，不包含代理节点、私人订阅模板、服务器发布脚本或个人 override。
 
-## Output
+## 输出文件
 
-The default build writes:
+默认构建会生成：
 
 ```text
 dist/reject.yaml
 dist/build-report.json
 ```
 
-`dist/reject.yaml` uses the Mihomo rule-provider payload format:
+`dist/reject.yaml` 使用 Mihomo rule-provider 的 `payload` 格式：
 
 ```yaml
 payload:
@@ -21,7 +21,7 @@ payload:
   - DOMAIN-KEYWORD,tracker
 ```
 
-Use it from Mihomo/Clash-compatible configs as a classical rule provider:
+在 Mihomo/Clash 兼容配置中可这样引用：
 
 ```yaml
 rule-providers:
@@ -37,45 +37,54 @@ rules:
   - RULE-SET,adblock,REJECT
 ```
 
-## Current Sources
+## 规则来源
 
-Sources are configured in [sources.yaml](sources.yaml). The initial source set follows the public upstream list used by [`217heidai/adblockfilters`](https://github.com/217heidai/adblockfilters), but this project fetches those original lists directly and builds its own YAML output.
+来源配置在 [sources.yaml](sources.yaml)。初始来源参考 [`217heidai/adblockfilters`](https://github.com/217heidai/adblockfilters) 使用的公开上游列表，但本项目不会引用它生成好的成品规则，而是直接抓取这些原始来源并自行构建 YAML。
 
-Current upstream categories:
+| 名称 | 来源网站 | 原始规则 URL |
+| --- | --- | --- |
+| AdGuard Base filter | [AdGuard Filters Registry](https://github.com/AdguardTeam/FiltersRegistry) | <https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt> |
+| AdGuard Chinese filter | [AdGuard Filters Registry](https://github.com/AdguardTeam/FiltersRegistry) | <https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt> |
+| AdGuard Mobile Ads filter | [AdGuard Filters](https://github.com/AdguardTeam/AdguardFilters) | <https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt> |
+| AdGuard DNS filter | [AdGuard DNS Filter](https://github.com/AdguardTeam/AdGuardSDNSFilter) | <https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt> |
+| AdRules DNS List | [Cats-Team/AdRules](https://github.com/Cats-Team/AdRules) | <https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt> |
+| CJX's Annoyance List | [cjx82630/cjxlist](https://github.com/cjx82630/cjxlist) | <https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt> |
+| EasyList | [EasyList](https://easylist.to/) | <https://easylist-downloads.adblockplus.org/easylist.txt> |
+| EasyList China | [EasyList China](https://github.com/easylist/easylistchina) | <https://easylist-downloads.adblockplus.org/easylistchina.txt> |
+| EasyPrivacy | [EasyPrivacy](https://easylist.to/) | <https://easylist-downloads.adblockplus.org/easyprivacy.txt> |
+| xinggsf mv | [xinggsf/Adblock-Plus-Rule](https://github.com/xinggsf/Adblock-Plus-Rule) | <https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt> |
+| jiekouAD | [damengzhu/banad](https://github.com/damengzhu/banad) | <https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt> |
+| AWAvenue Ads Rule | [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule) | <https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/AWAvenue-Ads-Rule.txt> |
+| DNS-Blocklists Light | [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists) | <https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt> |
+| OISD Basic | [OISD](https://oisd.nl/) | <https://abp.oisd.nl/basic/> |
+| StevenBlack hosts | [StevenBlack/hosts](https://github.com/StevenBlack/hosts) | <https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts> |
+| Pollock hosts | [someonewhocares.org](https://someonewhocares.org/hosts/) | <https://someonewhocares.org/hosts/hosts> |
 
-- AdGuard filters
-- EasyList / EasyPrivacy
-- AdRules DNS List
-- AWAvenue Ads Rule
-- HaGeZi DNS blocklists
-- OISD Basic
-- StevenBlack hosts
-- Pollock hosts
-- several China-focused adblock lists
+请在公开分发生成文件前自行确认各上游项目的许可证和使用条款。
 
-Only public upstream lists are used. Check each upstream project's license and terms before redistributing generated output.
+## 构建逻辑
 
-## What The Builder Does
-
-- fetches all configured public rule sources
-- extracts Clash/Mihomo `payload` entries
-- extracts common Adblock Plus / AdGuard domain rules such as `||example.com^`
-- extracts common hosts entries such as `0.0.0.0 example.com`
-- extracts plain domain lines
-- normalizes supported rules:
+- 拉取 [sources.yaml](sources.yaml) 中配置的公开规则源
+- 提取 Clash/Mihomo `payload` 条目
+- 提取常见 Adblock Plus / AdGuard 域名规则，例如 `||example.com^`
+- 提取常见 hosts 条目，例如 `0.0.0.0 example.com`
+- 提取纯域名行
+- 规范化为以下规则类型：
   - `DOMAIN`
   - `DOMAIN-SUFFIX`
   - `DOMAIN-KEYWORD`
   - `IP-CIDR`
   - `IP-CIDR6`
-- removes exact duplicates
-- removes exact domains already covered by suffix rules
-- removes domain/suffix rules already covered by keyword rules
-- writes a build report with source counts
+- 移除完全重复的规则
+- 移除已被后缀规则覆盖的精确域名
+- 移除已被关键字规则覆盖的域名/后缀规则
+- 输出构建报告和各来源解析数量
 
-Exception rules, cosmetic rules, scriptlet rules, and unsupported rule types are skipped in the MVP. This keeps the generated Mihomo rule-provider focused on domain-level reject rules.
+MVP 阶段会跳过例外规则、网页元素隐藏规则、scriptlet 规则和暂不支持的规则类型，目标是生成稳定的域名级 reject rule-provider。
 
-## Local Build
+## 本地构建
+
+Windows PowerShell：
 
 ```powershell
 python -m venv .venv
@@ -84,7 +93,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m adblock_merge.builder
 ```
 
-On Linux/macOS:
+Linux/macOS：
 
 ```bash
 python -m venv .venv
@@ -96,35 +105,30 @@ python -m adblock_merge.builder
 
 ## GitHub Actions
 
-The workflow in [.github/workflows/build.yml](.github/workflows/build.yml) runs on every push, every pull request, manual dispatch, and a daily schedule.
+[.github/workflows/build.yml](.github/workflows/build.yml) 会在 push、pull request、手动触发和每日定时任务时运行。
 
-It performs:
+CI 会执行：
 
-1. install dependencies
-2. run tests
-3. build `dist/reject.yaml`
-4. upload `dist/` as a workflow artifact
-5. deploy `dist/` to GitHub Pages when running on the default branch
+1. 安装依赖
+2. 运行测试
+3. 构建 `dist/reject.yaml`
+4. 把 `dist/` 上传为 workflow artifact
 
-To publish the YAML through GitHub Pages:
+下载方式：
 
-1. Push this project to a GitHub repository.
-2. Open `Settings -> Pages`.
-3. Set source to `GitHub Actions`.
-4. Run the `Build adblock rules` workflow.
-5. Use the Pages URL ending in `/reject.yaml`.
+1. 打开仓库的 `Actions` 页面。
+2. 进入最新的 `Build adblock rules` run。
+3. 在 `Artifacts` 区域下载 `adblock-rules`。
 
-## Upload Checklist
+## 上传前检查
 
-Before making the repository public:
+- `git status --short` 应保持干净
+- [sources.yaml](sources.yaml) 中只应包含公开 URL
+- 仓库中不应包含个人域名、代理节点、token、SSH 路径或服务器发布配置
+- 运行 `python -m unittest discover -v`
+- 运行 `python -m adblock_merge.builder`
+- 检查 `dist/reject.yaml`
 
-- confirm `git status --short` contains only this project
-- review [sources.yaml](sources.yaml) for public-only URLs
-- confirm no personal domains, proxy nodes, tokens, or SSH paths exist
-- run `python -m unittest discover -v`
-- run `python -m adblock_merge.builder`
-- inspect `dist/reject.yaml`
+## 许可证
 
-## License
-
-Code in this repository is released under the MIT License. Generated rule output may include data from upstream rule projects; follow upstream licenses when redistributing.
+本仓库代码使用 MIT License。生成规则文件会包含来自上游规则项目的数据，公开分发时请遵守对应上游项目的许可证和使用条款。
