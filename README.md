@@ -1,6 +1,6 @@
 # Adblock Rule Merge
 
-公开去广告规则合并器。项目会从多个公开上游规则源拉取数据，提取可用于 Mihomo/Clash 的域名级拦截规则，去重整理后生成一个 `reject.yaml`。
+公开去广告规则合并器。项目会从多个公开上游规则源拉取数据，提取可用于 Mihomo/Clash 的域名级拦截规则，去重整理后生成一个 `reject.list`。
 
 这个项目只做去广告规则整理，不包含代理节点、私人订阅模板、服务器发布脚本或个人 override。
 
@@ -9,16 +9,21 @@
 默认构建会生成：
 
 ```text
-dist/reject.yaml
+dist/reject.list
 dist/build-report.json
 ```
 
-`dist/reject.yaml` 使用 Mihomo rule-provider 的 `payload` 格式：
+持续更新的订阅链接：
 
-```yaml
-payload:
-  - DOMAIN-SUFFIX,example.com
-  - DOMAIN-KEYWORD,tracker
+```text
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list
+```
+
+`dist/reject.list` 使用纯文本规则列表格式，每行一条两段式规则：
+
+```text
+DOMAIN-SUFFIX,example.com
+DOMAIN-KEYWORD,tracker
 ```
 
 在 Mihomo/Clash 兼容配置中可这样引用：
@@ -28,13 +33,43 @@ rule-providers:
   adblock:
     type: http
     behavior: classical
-    format: yaml
-    url: https://example.com/reject.yaml
-    path: ./ruleset/adblock.yaml
+    format: text
+    url: https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list
+    path: ./ruleset/adblock.list
     interval: 86400
 
 rules:
   - RULE-SET,adblock,REJECT
+```
+
+## Clash 覆写脚本示例
+
+如果客户端支持 JavaScript 覆写脚本，可以用下面的方式自动加入 rule-provider，并把去广告规则插到规则列表前面：
+
+```javascript
+function main(config) {
+  const providerName = "adblock";
+  const providerUrl = "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list";
+
+  config["rule-providers"] = config["rule-providers"] || {};
+  config["rule-providers"][providerName] = {
+    type: "http",
+    behavior: "classical",
+    format: "text",
+    url: providerUrl,
+    path: "./ruleset/adblock.list",
+    interval: 86400,
+  };
+
+  const adblockRule = `RULE-SET,${providerName},REJECT`;
+  config.rules = config.rules || [];
+  config.rules = [
+    adblockRule,
+    ...config.rules.filter((rule) => rule !== adblockRule),
+  ];
+
+  return config;
+}
 ```
 
 ## 规则来源
@@ -65,7 +100,7 @@ rules:
 ## 构建逻辑
 
 - 拉取 [sources.yaml](sources.yaml) 中配置的公开规则源
-- 提取 Clash/Mihomo `payload` 条目
+- 提取 Clash/Mihomo `payload` 条目并转成纯文本规则行
 - 提取常见 Adblock Plus / AdGuard 域名规则，例如 `||example.com^`
 - 提取常见 hosts 条目，例如 `0.0.0.0 example.com`
 - 提取纯域名行
@@ -111,23 +146,8 @@ CI 会执行：
 
 1. 安装依赖
 2. 运行测试
-3. 构建 `dist/reject.yaml`
-4. 把 `dist/` 上传为 workflow artifact
-
-下载方式：
-
-1. 打开仓库的 `Actions` 页面。
-2. 进入最新的 `Build adblock rules` run。
-3. 在 `Artifacts` 区域下载 `adblock-rules`。
-
-## 上传前检查
-
-- `git status --short` 应保持干净
-- [sources.yaml](sources.yaml) 中只应包含公开 URL
-- 仓库中不应包含个人域名、代理节点、token、SSH 路径或服务器发布配置
-- 运行 `python -m unittest discover -v`
-- 运行 `python -m adblock_merge.builder`
-- 检查 `dist/reject.yaml`
+3. 构建 `dist/reject.list`
+4. 如果生成文件发生变化，自动提交更新 `dist/reject.list` 和 `dist/build-report.json`
 
 ## 许可证
 

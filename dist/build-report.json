@@ -1,0 +1,69 @@
+{
+  "sources": {
+    "adguard_base_filter": {
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt",
+      "parsed_rules": 73653
+    },
+    "adguard_chinese_filter": {
+      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt",
+      "parsed_rules": 10966
+    },
+    "adguard_mobile_ads_filter": {
+      "url": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt",
+      "parsed_rules": 932
+    },
+    "adguard_dns_filter": {
+      "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
+      "parsed_rules": 159611
+    },
+    "adrules_dns_list": {
+      "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt",
+      "parsed_rules": 179537
+    },
+    "cjx_annoyance_list": {
+      "url": "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
+      "parsed_rules": 690
+    },
+    "easylist": {
+      "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
+      "parsed_rules": 58191
+    },
+    "easylist_china": {
+      "url": "https://easylist-downloads.adblockplus.org/easylistchina.txt",
+      "parsed_rules": 10261
+    },
+    "easyprivacy": {
+      "url": "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
+      "parsed_rules": 48914
+    },
+    "xinggsf_mv": {
+      "url": "https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt",
+      "parsed_rules": 88
+    },
+    "jiekouad": {
+      "url": "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt",
+      "parsed_rules": 4669
+    },
+    "awavenue_ads_rule": {
+      "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/AWAvenue-Ads-Rule.txt",
+      "parsed_rules": 906
+    },
+    "dns_blocklists_light": {
+      "url": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt",
+      "parsed_rules": 70274
+    },
+    "oisd_basic": {
+      "url": "https://abp.oisd.nl/basic/",
+      "parsed_rules": 58366
+    },
+    "stevenblack_hosts": {
+      "url": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+      "parsed_rules": 83042
+    },
+    "pollock_hosts": {
+      "url": "https://someonewhocares.org/hosts/hosts",
+      "parsed_rules": 12805
+    }
+  },
+  "total_rules": 321719
+}

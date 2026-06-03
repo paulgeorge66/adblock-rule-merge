@@ -9,7 +9,7 @@ on:
     - cron: "17 20 * * *"
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: build
@@ -40,8 +40,15 @@ jobs:
       - name: Build rule provider
         run: python -m adblock_merge.builder
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: adblock-rules
-          path: dist/
+      - name: Commit generated rules
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "kamisu"
+          git config user.email "152141084+paulgeorge66@users.noreply.github.com"
+          git add dist/reject.list dist/build-report.json
+          if git diff --cached --quiet; then
+            echo "No generated rule changes."
+          else
+            git commit -m "chore: update generated adblock rules"
+            git push
+          fi

@@ -2,8 +2,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import yaml
-
 from adblock_merge.builder import (
     ParsedRule,
     build_rules_from_sources,
@@ -11,7 +9,7 @@ from adblock_merge.builder import (
     normalize_rule_line,
     parse_rules,
     prune_shadowed_rules,
-    render_rule_provider_yaml,
+    render_rule_provider_text,
 )
 
 
@@ -78,23 +76,16 @@ bad_label_.example.com
             ],
         )
 
-    def test_render_rule_provider_yaml(self):
-        rendered = render_rule_provider_yaml(
+    def test_render_rule_provider_text(self):
+        rendered = render_rule_provider_text(
             [
                 ParsedRule("DOMAIN-SUFFIX", "example.com"),
                 ParsedRule("DOMAIN-KEYWORD", "tracker"),
             ]
         )
-        self.assertIn("  - DOMAIN-SUFFIX,example.com", rendered)
-        data = yaml.safe_load(rendered)
         self.assertEqual(
-            data,
-            {
-                "payload": [
-                    "DOMAIN-SUFFIX,example.com",
-                    "DOMAIN-KEYWORD,tracker",
-                ]
-            },
+            rendered,
+            "DOMAIN-SUFFIX,example.com\nDOMAIN-KEYWORD,tracker\n",
         )
 
     def test_build_rules_from_sources_uses_local_fixture_urls(self):

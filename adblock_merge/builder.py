@@ -16,7 +16,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCES = ROOT / "sources.yaml"
-DEFAULT_OUTPUT = ROOT / "dist" / "reject.yaml"
+DEFAULT_OUTPUT = ROOT / "dist" / "reject.list"
 DEFAULT_REPORT = ROOT / "dist" / "build-report.json"
 
 CIDR_V4_RE = re.compile(r"^\d+\.\d+\.\d+\.\d+/\d+$")
@@ -233,9 +233,8 @@ def build_rules_from_sources(sources: Iterable[dict]) -> tuple[list[ParsedRule],
     return rules, report
 
 
-def render_rule_provider_yaml(rules: Iterable[ParsedRule]) -> str:
-    lines = ["payload:"]
-    lines.extend(f"  - {rule.render()}" for rule in rules)
+def render_rule_provider_text(rules: Iterable[ParsedRule]) -> str:
+    lines = [rule.render() for rule in rules]
     return "\n".join(lines) + "\n"
 
 
@@ -248,7 +247,7 @@ def load_sources(path: Path) -> list[dict]:
 
 def write_outputs(rules: list[ParsedRule], report: dict, output: Path, report_path: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(render_rule_provider_yaml(rules), encoding="utf-8", newline="\n")
+    output.write_text(render_rule_provider_text(rules), encoding="utf-8", newline="\n")
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
