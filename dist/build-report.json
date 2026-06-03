@@ -54,7 +54,7 @@
     },
     "oisd_basic": {
       "url": "https://abp.oisd.nl/basic/",
-      "parsed_rules": 58366
+      "parsed_rules": 58364
     },
     "stevenblack_hosts": {
       "url": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
@@ -65,5 +65,5 @@
       "parsed_rules": 12805
     }
   },
-  "total_rules": 321719
+  "total_rules": 321729
 }
