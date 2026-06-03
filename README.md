@@ -22,11 +22,11 @@ https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reje
 Shadowrocket 分片测试链接：
 
 ```text
-https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part1.list
-https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part2.list
-https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part3.list
-https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part4.list
-https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part5.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part1.module
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part2.module
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part3.module
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part4.module
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/shadowrocket/reject-part5.module
 ```
 
 `dist/reject.list` 使用纯文本规则列表格式，每行一条两段式规则：

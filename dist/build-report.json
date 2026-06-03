@@ -68,29 +68,29 @@
   "total_rules": 321737,
   "shadowrocket_parts": [
     {
-      "path": "dist/shadowrocket/reject-part1.list",
-      "bytes": 2999980,
-      "rules": 72386
+      "path": "dist/shadowrocket/reject-part1.module",
+      "bytes": 2999988,
+      "rules": 72384
     },
     {
-      "path": "dist/shadowrocket/reject-part2.list",
-      "bytes": 2999983,
-      "rules": 72478
+      "path": "dist/shadowrocket/reject-part2.module",
+      "bytes": 2999971,
+      "rules": 72475
     },
     {
-      "path": "dist/shadowrocket/reject-part3.list",
-      "bytes": 2999995,
-      "rules": 72617
+      "path": "dist/shadowrocket/reject-part3.module",
+      "bytes": 2999962,
+      "rules": 72613
     },
     {
-      "path": "dist/shadowrocket/reject-part4.list",
-      "bytes": 2999983,
-      "rules": 72018
+      "path": "dist/shadowrocket/reject-part4.module",
+      "bytes": 2999967,
+      "rules": 72016
     },
     {
-      "path": "dist/shadowrocket/reject-part5.list",
-      "bytes": 1345837,
-      "rules": 32238
+      "path": "dist/shadowrocket/reject-part5.module",
+      "bytes": 1346400,
+      "rules": 32249
     }
   ]
 }
