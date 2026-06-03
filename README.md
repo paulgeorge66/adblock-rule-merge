@@ -57,36 +57,40 @@ rules:
 如果客户端支持 JavaScript 覆写脚本，可以用下面的方式自动加入 rule-provider，并把去广告规则插到规则列表前面：
 
 ```javascript
-function main(config) {
-  const providerName = "adblock";
-  const providerUrl = "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list";
-  const providerPath = "./ruleset/adblock.list";
+function main(params) {
+    if (!params.proxies) return params;
+    overwriteAdblockRules(params);
+    return params;
+}
 
-  config["rule-providers"] = config["rule-providers"] || {};
-  config.rules = config.rules || [];
+function overwriteAdblockRules(params) {
+    var providerName = "adblock";
+    var adblockRule = "RULE-SET," + providerName + ",REJECT";
 
-  config["rule-providers"][providerName] = {
-    type: "http",
-    behavior: "classical",
-    format: "text",
-    url: providerUrl,
-    path: providerPath,
-    interval: 86400,
-  };
+    params["rule-providers"] = params["rule-providers"] || {};
+    params.rules = params.rules || [];
 
-  const adblockRule = "RULE-SET," + providerName + ",REJECT";
-  const upperRules = config.rules.map((rule) => String(rule).toUpperCase().trim());
+    params["rule-providers"][providerName] = {
+        type: "http",
+        behavior: "classical",
+        format: "text",
+        url: "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list",
+        path: "./ruleset/adblock.list",
+        interval: 86400,
+    };
 
-  if (!upperRules.includes(adblockRule.toUpperCase())) {
-    let insertIndex = config.rules.findIndex((rule) => {
-      const upper = String(rule).toUpperCase();
-      return upper.startsWith("MATCH") || upper.startsWith("FINAL");
+    var upperRules = params.rules.map(function (rule) {
+        return String(rule).toUpperCase().trim();
     });
-    if (insertIndex === -1) insertIndex = config.rules.length;
-    config.rules.splice(insertIndex, 0, adblockRule);
-  }
+    if (upperRules.indexOf(adblockRule.toUpperCase()) !== -1) return;
 
-  return config;
+    var insertIndex = params.rules.findIndex(function (rule) {
+        var upper = String(rule).toUpperCase();
+        return upper.indexOf("MATCH") === 0 || upper.indexOf("FINAL") === 0;
+    });
+    if (insertIndex === -1) insertIndex = params.rules.length;
+
+    params.rules.splice(insertIndex, 0, adblockRule);
 }
 ```
 
