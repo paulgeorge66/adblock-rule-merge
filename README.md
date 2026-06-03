@@ -47,29 +47,39 @@ rules:
 如果客户端支持 JavaScript 覆写脚本，可以用下面的方式自动加入 rule-provider，并把去广告规则插到规则列表前面：
 
 ```javascript
-function main(config) {
-  const providerName = "adblock";
-  const providerUrl = "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list";
+const AD_RULE_PROVIDER = {
+  name: "adblock",
+  url: "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list",
+  path: "./ruleset/adblock.list",
+};
 
+const main = (config) => {
   config["rule-providers"] = config["rule-providers"] || {};
-  config["rule-providers"][providerName] = {
+  config.rules = config.rules || [];
+
+  config["rule-providers"][AD_RULE_PROVIDER.name] = {
     type: "http",
     behavior: "classical",
     format: "text",
-    url: providerUrl,
-    path: "./ruleset/adblock.list",
+    url: AD_RULE_PROVIDER.url,
+    path: AD_RULE_PROVIDER.path,
     interval: 86400,
   };
 
-  const adblockRule = `RULE-SET,${providerName},REJECT`;
-  config.rules = config.rules || [];
-  config.rules = [
-    adblockRule,
-    ...config.rules.filter((rule) => rule !== adblockRule),
-  ];
+  const adblockRule = "RULE-SET," + AD_RULE_PROVIDER.name + ",REJECT";
+  const upperRules = config.rules.map((rule) => String(rule).toUpperCase().trim());
+
+  if (!upperRules.includes(adblockRule.toUpperCase())) {
+    let insertIndex = config.rules.findIndex((rule) => {
+      const upper = String(rule).toUpperCase();
+      return upper.startsWith("MATCH") || upper.startsWith("FINAL");
+    });
+    if (insertIndex === -1) insertIndex = config.rules.length;
+    config.rules.splice(insertIndex, 0, adblockRule);
+  }
 
   return config;
-}
+};
 ```
 
 ## 规则来源
