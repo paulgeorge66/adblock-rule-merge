@@ -26,7 +26,7 @@
     },
     "easylist": {
       "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
-      "parsed_rules": 58358
+      "parsed_rules": 58360
     },
     "easylist_china": {
       "url": "https://easylist-downloads.adblockplus.org/easylistchina.txt",
@@ -65,7 +65,7 @@
       "parsed_rules": 12813
     }
   },
-  "total_rules": 304763,
+  "total_rules": 304764,
   "allowlist_sources": {
     "routing_static_allowlist": {
       "location": "allowlist.list",
@@ -73,12 +73,12 @@
     }
   },
   "allowlist": {
-    "input_rules": 319628,
+    "input_rules": 319629,
     "allowlist_rules": 3939,
     "removed_rules": 14865,
     "removed_by_type": {
       "DOMAIN-SUFFIX": 14865
     },
-    "output_rules": 304763
+    "output_rules": 304764
   }
 }
