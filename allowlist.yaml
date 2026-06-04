@@ -1,0 +1,3 @@
+sources:
+  - name: routing_static_allowlist
+    path: allowlist.list
