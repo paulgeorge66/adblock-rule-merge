@@ -4,9 +4,13 @@ from pathlib import Path
 
 from adblock_merge.builder import (
     ParsedRule,
+    apply_allowlist_exact,
     build_rules_from_sources,
     extract_payload_lines,
+    load_allowlist,
+    normalize_allowlist_line,
     normalize_rule_line,
+    normalize_upstream_exception_line,
     parse_rules,
     prune_shadowed_rules,
     render_rule_provider_text,
@@ -60,6 +64,29 @@ bad_label_.example.com
             ],
         )
 
+    def test_normalize_upstream_exception_only_accepts_global_domain_exceptions(self):
+        self.assertEqual(
+            normalize_upstream_exception_line("@@||allowed.example.com^"),
+            ParsedRule("DOMAIN-SUFFIX", "allowed.example.com"),
+        )
+        self.assertEqual(
+            normalize_upstream_exception_line("@@||allowed.example.com^$important"),
+            ParsedRule("DOMAIN-SUFFIX", "allowed.example.com"),
+        )
+        self.assertIsNone(normalize_upstream_exception_line("@@||analytics.example.com^$domain=example.org"))
+        self.assertIsNone(normalize_upstream_exception_line("@@||cdn.example.com/path/ad.js"))
+
+    def test_normalize_allowlist_accepts_217heidai_domain_formats(self):
+        self.assertEqual(
+            normalize_allowlist_line("browser.miui.com"),
+            ParsedRule("DOMAIN-SUFFIX", "browser.miui.com"),
+        )
+        self.assertEqual(
+            normalize_allowlist_line("||pool.nimiq.watch^$third-party"),
+            ParsedRule("DOMAIN-SUFFIX", "pool.nimiq.watch"),
+        )
+        self.assertIsNone(normalize_allowlist_line("youtube.com#%#//scriptlet('json-prune-fetch-response')"))
+
     def test_prune_shadowed_rules_removes_exact_and_suffix_duplicates(self):
         rules = [
             ParsedRule("DOMAIN-SUFFIX", "example.com"),
@@ -88,31 +115,83 @@ bad_label_.example.com
             "DOMAIN-SUFFIX,example.com\nDOMAIN-KEYWORD,tracker\n",
         )
 
+    def test_allowlist_is_exact_and_runs_before_pruning(self):
+        rules = [
+            ParsedRule("DOMAIN-SUFFIX", "google.com"),
+            ParsedRule("DOMAIN-SUFFIX", "ads.google.com"),
+            ParsedRule("DOMAIN", "track.google.com"),
+        ]
+        allowlist = [ParsedRule("DOMAIN-SUFFIX", "google.com")]
+
+        filtered, removed = apply_allowlist_exact(rules, allowlist)
+        pruned = prune_shadowed_rules(filtered)
+
+        self.assertEqual(removed, 1)
+        self.assertEqual(
+            pruned,
+            [
+                ParsedRule("DOMAIN-SUFFIX", "ads.google.com"),
+                ParsedRule("DOMAIN", "track.google.com"),
+            ],
+        )
+
     def test_build_rules_from_sources_uses_local_fixture_urls(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             source_a = root / "a.yaml"
             source_b = root / "b.txt"
             source_a.write_text("payload:\n  - '+.example.com'\n  - DOMAIN,ads.example.com\n", encoding="utf-8")
-            source_b.write_text("payload:\n  - DOMAIN-KEYWORD,tracker\n  - DOMAIN-SUFFIX,example.com\n", encoding="utf-8")
+            source_b.write_text(
+                "payload:\n"
+                "  - DOMAIN-KEYWORD,tracker\n"
+                "  - DOMAIN-SUFFIX,example.com\n"
+                "@@||example.com^\n"
+                "@@||scoped.example.com^$domain=site.example\n",
+                encoding="utf-8",
+            )
 
             rules, report = build_rules_from_sources(
                 [
                     {"name": "a", "url": source_a.as_uri()},
                     {"name": "b", "url": source_b.as_uri()},
-                ]
+                ],
+                static_allowlist=[ParsedRule("DOMAIN-SUFFIX", "example.com")],
             )
 
         self.assertEqual(
             rules,
             [
-                ParsedRule("DOMAIN-SUFFIX", "example.com"),
                 ParsedRule("DOMAIN-KEYWORD", "tracker"),
+                ParsedRule("DOMAIN", "ads.example.com"),
             ],
         )
         self.assertEqual(report["total_rules"], 2)
         self.assertEqual(report["sources"]["a"]["parsed_rules"], 2)
         self.assertEqual(report["sources"]["b"]["parsed_rules"], 2)
+        self.assertEqual(report["sources"]["b"]["safe_exception_rules"], 1)
+        self.assertEqual(report["allowlist"]["removed_rules"], 2)
+
+    def test_load_allowlist_from_local_fixture(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            allowlist_text = root / "white.txt"
+            allowlist_config = root / "allowlist.yaml"
+            allowlist_text.write_text("browser.miui.com\n||pool.nimiq.watch^$third-party\n", encoding="utf-8")
+            allowlist_config.write_text(
+                "sources:\n  - name: local\n    path: white.txt\n",
+                encoding="utf-8",
+            )
+
+            rules, report = load_allowlist(allowlist_config)
+
+        self.assertEqual(
+            rules,
+            [
+                ParsedRule("DOMAIN-SUFFIX", "browser.miui.com"),
+                ParsedRule("DOMAIN-SUFFIX", "pool.nimiq.watch"),
+            ],
+        )
+        self.assertEqual(report["sources"]["local"]["parsed_rules"], 2)
 
 
 if __name__ == "__main__":

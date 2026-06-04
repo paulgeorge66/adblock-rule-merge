@@ -71,19 +71,21 @@ function main(config) {
 
 ## 静态白名单
 
-仓库包含一个静态白名单文件：
+仓库包含一份本地维护的精确白名单：
 
 ```text
 allowlist.list
 ```
 
-它用于排除和分流规则冲突的去广告条目，避免常用服务域名被误拦截。构建时只读取仓库内的静态白名单，不会动态抓取其他项目的规则。
+它只用于移除明显过宽的平台主域规则，例如把 `DOMAIN-SUFFIX,google.com` 从 reject 中移除，但不会移除 `DOMAIN-SUFFIX,ads.google.com`、`DOMAIN-SUFFIX,pagead2.googlesyndication.com` 这类子域规则。
 
 白名单配置在：
 
 ```text
 allowlist.yaml
 ```
+
+构建时还会参考上游规则中的安全例外规则，以及 [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters/) `rules/white.txt` 中公开 issue 记录的误杀白名单。所有白名单都按精确匹配应用，不做后缀级放行。
 
 ## 输出文件
 
@@ -126,11 +128,12 @@ dist/build-report.json
 - 提取常见 Adblock Plus / AdGuard 域名规则
 - 提取 hosts 条目和纯域名行
 - 规范化为 `DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`IP-CIDR`、`IP-CIDR6`
+- 解析可安全表达为 DNS/Clash 规则的全局例外规则
+- 按精确匹配应用白名单
 - 移除重复规则和被覆盖的规则
-- 应用静态白名单
 - 输出规则文件和构建报告
 
-暂不支持例外规则、网页元素隐藏规则、scriptlet 规则和其他非域名类广告过滤语法。
+不支持网页元素隐藏规则、scriptlet 规则、带站点作用域的例外规则和其他非域名类广告过滤语法。
 
 ## 本地构建
 
