@@ -2,23 +2,23 @@
   "sources": {
     "adguard_base_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt",
-      "parsed_rules": 73653
+      "parsed_rules": 73809
     },
     "adguard_chinese_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt",
-      "parsed_rules": 10966
+      "parsed_rules": 10975
     },
     "adguard_mobile_ads_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt",
-      "parsed_rules": 932
+      "parsed_rules": 933
     },
     "adguard_dns_filter": {
       "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-      "parsed_rules": 159611
+      "parsed_rules": 159783
     },
     "adrules_dns_list": {
       "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt",
-      "parsed_rules": 179537
+      "parsed_rules": 179756
     },
     "cjx_annoyance_list": {
       "url": "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
@@ -26,11 +26,11 @@
     },
     "easylist": {
       "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
-      "parsed_rules": 58197
+      "parsed_rules": 58349
     },
     "easylist_china": {
       "url": "https://easylist-downloads.adblockplus.org/easylistchina.txt",
-      "parsed_rules": 10263
+      "parsed_rules": 10269
     },
     "easyprivacy": {
       "url": "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
@@ -50,20 +50,20 @@
     },
     "dns_blocklists_light": {
       "url": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt",
-      "parsed_rules": 70274
+      "parsed_rules": 67394
     },
     "oisd_basic": {
       "url": "https://abp.oisd.nl/basic/",
-      "parsed_rules": 58364
+      "parsed_rules": 58458
     },
     "stevenblack_hosts": {
       "url": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
-      "parsed_rules": 83042
+      "parsed_rules": 83596
     },
     "pollock_hosts": {
       "url": "https://someonewhocares.org/hosts/hosts",
-      "parsed_rules": 12805
+      "parsed_rules": 12813
     }
   },
-  "total_rules": 321737
+  "total_rules": 319617
 }
