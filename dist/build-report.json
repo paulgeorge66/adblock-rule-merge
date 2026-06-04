@@ -2,7 +2,7 @@
   "sources": {
     "custom_adblock": {
       "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
-      "parsed_rules": 189002
+      "parsed_rules": 192044
     },
     "loyal_reject": {
       "url": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
@@ -14,16 +14,16 @@
     },
     "anti_ad": {
       "url": "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
-      "parsed_rules": 107377
+      "parsed_rules": 105335
     },
     "yhosts": {
       "url": "https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts",
       "parsed_rules": 6418
     }
   },
-  "total_rules": 243578,
+  "total_rules": 243960,
   "expanded_rules": {
     "path": "dist/reject-expanded.yaml",
-    "rules": 243578
+    "rules": 243960
   }
 }
