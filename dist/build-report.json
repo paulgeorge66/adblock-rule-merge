@@ -2,57 +2,57 @@
   "sources": {
     "adguard_base_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt",
-      "parsed_rules": 73864,
+      "parsed_rules": 59892,
       "safe_exception_rules": 25
     },
     "adguard_chinese_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt",
-      "parsed_rules": 10980,
+      "parsed_rules": 6047,
       "safe_exception_rules": 11
     },
     "adguard_mobile_ads_filter": {
       "url": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt",
-      "parsed_rules": 933,
+      "parsed_rules": 898,
       "safe_exception_rules": 0
     },
     "adguard_dns_filter": {
       "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-      "parsed_rules": 159839,
+      "parsed_rules": 159856,
       "safe_exception_rules": 11
     },
     "adrules_dns_list": {
       "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt",
-      "parsed_rules": 179760,
+      "parsed_rules": 179818,
       "safe_exception_rules": 0
     },
     "cjx_annoyance_list": {
       "url": "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
-      "parsed_rules": 690,
+      "parsed_rules": 114,
       "safe_exception_rules": 0
     },
     "easylist": {
       "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
-      "parsed_rules": 58408,
+      "parsed_rules": 50680,
       "safe_exception_rules": 0
     },
     "easylist_china": {
       "url": "https://easylist-downloads.adblockplus.org/easylistchina.txt",
-      "parsed_rules": 10272,
+      "parsed_rules": 5908,
       "safe_exception_rules": 11
     },
     "easyprivacy": {
       "url": "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
-      "parsed_rules": 48917,
+      "parsed_rules": 40484,
       "safe_exception_rules": 4
     },
     "xinggsf_mv": {
       "url": "https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt",
-      "parsed_rules": 88,
+      "parsed_rules": 27,
       "safe_exception_rules": 0
     },
     "jiekouad": {
       "url": "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt",
-      "parsed_rules": 4670,
+      "parsed_rules": 4482,
       "safe_exception_rules": 4
     },
     "awavenue_ads_rule": {
@@ -85,7 +85,7 @@
     "static_rules": 217,
     "upstream_exception_rules": 44,
     "total_rules": 261,
-    "removed_rules": 871,
+    "removed_rules": 220,
     "mode": "exact",
     "sources": {
       "curated_broad_platform_domains": {
@@ -98,5 +98,5 @@
       }
     }
   },
-  "total_rules": 319531
+  "total_rules": 306217
 }
