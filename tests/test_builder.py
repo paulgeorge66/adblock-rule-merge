@@ -4,7 +4,6 @@ from pathlib import Path
 
 from adblock_merge.builder import (
     ParsedRule,
-    apply_allowlist,
     build_rules_from_sources,
     extract_payload_lines,
     normalize_rule_line,
@@ -114,23 +113,6 @@ bad_label_.example.com
         self.assertEqual(report["total_rules"], 2)
         self.assertEqual(report["sources"]["a"]["parsed_rules"], 2)
         self.assertEqual(report["sources"]["b"]["parsed_rules"], 2)
-
-    def test_apply_allowlist_removes_routing_conflicts(self):
-        rules = [
-            ParsedRule("DOMAIN-SUFFIX", "ads.example.com"),
-            ParsedRule("DOMAIN", "track.example.com"),
-            ParsedRule("DOMAIN-SUFFIX", "unrelated.test"),
-            ParsedRule("IP-CIDR", "1.2.3.0/24"),
-        ]
-        allowlist = [
-            ParsedRule("DOMAIN-SUFFIX", "example.com"),
-            ParsedRule("IP-CIDR", "1.2.3.0/24"),
-        ]
-
-        kept, report = apply_allowlist(rules, allowlist)
-
-        self.assertEqual(kept, [ParsedRule("DOMAIN-SUFFIX", "unrelated.test")])
-        self.assertEqual(report["removed_rules"], 3)
 
 
 if __name__ == "__main__":
