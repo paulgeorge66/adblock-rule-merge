@@ -38,13 +38,38 @@ payload:
             "DOMAIN-KEYWORD,adservice": ParsedRule("DOMAIN-KEYWORD", "adservice"),
             "1.2.3.0/24": ParsedRule("IP-CIDR", "1.2.3.0/24"),
             "||ads.example.org^": ParsedRule("DOMAIN-SUFFIX", "ads.example.org"),
-            "||metrics.example.org^$third-party": ParsedRule("DOMAIN-SUFFIX", "metrics.example.org"),
             "0.0.0.0 tracker.example.net": ParsedRule("DOMAIN-SUFFIX", "tracker.example.net"),
+            "https://ads.example.net": ParsedRule("DOMAIN-SUFFIX", "ads.example.net"),
             "ad.example.test": ParsedRule("DOMAIN-SUFFIX", "ad.example.test"),
         }
         for raw, expected in cases.items():
             with self.subTest(raw=raw):
                 self.assertEqual(normalize_rule_line(raw), expected)
+
+    def test_normalize_rules_skips_browser_scoped_abp_rules(self):
+        cases = [
+            "||qpic.cn/qqgameedu/0/cfc175896f5b4d6a9ff115b3096dcebe_",
+            "||qq.com/report/$image,xmlhttprequest",
+            "||taobao.com^$popup,domain=52movieba.com",
+            "||baidu.com^$domain=pos.baidu.com",
+            "||metrics.example.org^$third-party",
+            "||example.org^*/interface/ad?",
+            "https://example.org/ad/banner.js",
+            "https://example.org/?ad=1",
+        ]
+        for raw in cases:
+            with self.subTest(raw=raw):
+                self.assertIsNone(normalize_rule_line(raw))
+
+    def test_normalize_rules_keeps_plain_abp_domain_rules(self):
+        self.assertEqual(
+            normalize_rule_line("||ads.example.org^"),
+            ParsedRule("DOMAIN-SUFFIX", "ads.example.org"),
+        )
+        self.assertEqual(
+            normalize_rule_line("||ads.example.org^$important"),
+            ParsedRule("DOMAIN-SUFFIX", "ads.example.org"),
+        )
 
     def test_parse_rules_skips_exceptions_comments_and_cosmetic_rules(self):
         text = """

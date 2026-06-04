@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -71,8 +72,11 @@ def fetch_text(url: str, retries: int = 3) -> str:
     curl = shutil.which("curl") or shutil.which("curl.exe")
     if curl:
         try:
+            curl_command = [curl, "-L", "--fail", "--retry", "3", "--retry-delay", "2", url]
+            if os.name == "nt":
+                curl_command.insert(1, "--ssl-no-revoke")
             result = subprocess.run(
-                [curl, "-L", "--fail", "--retry", "3", "--retry-delay", "2", url],
+                curl_command,
                 check=True,
                 capture_output=True,
                 timeout=90,
@@ -121,12 +125,7 @@ def normalize_rule_line(item: str) -> ParsedRule | None:
     if item.startswith("+."):
         return ParsedRule("DOMAIN-SUFFIX", item[2:].strip().lower())
     if item.startswith("||"):
-        domain = item[2:]
-        for delimiter in ("^", "/", "$", "*"):
-            if delimiter in domain:
-                domain = domain[: domain.find(delimiter)]
-        domain = _clean_domain(domain)
-        return ParsedRule("DOMAIN-SUFFIX", domain) if domain else None
+        return _parse_abp_domain_rule(item)
     if CIDR_V4_RE.match(item):
         return ParsedRule("IP-CIDR", item)
     if CIDR_V6_RE.match(item):
@@ -158,6 +157,20 @@ def _parse_hosts_line(item: str) -> ParsedRule | None:
         domain = _clean_domain(fields[1])
         return ParsedRule("DOMAIN-SUFFIX", domain) if domain else None
     return None
+
+
+def _parse_abp_domain_rule(item: str) -> ParsedRule | None:
+    body = item[2:].strip()
+    if not body or "/" in body or "*" in body:
+        return None
+    if "^" in body:
+        domain, suffix = body.split("^", 1)
+        if suffix and suffix not in {"|", "$important"}:
+            return None
+    else:
+        domain = body
+    domain = _clean_domain(domain)
+    return ParsedRule("DOMAIN-SUFFIX", domain) if domain else None
 
 
 def normalize_allowlist_line(item: str) -> ParsedRule | None:
@@ -198,7 +211,10 @@ def normalize_upstream_exception_line(item: str) -> ParsedRule | None:
 def _parse_url_rule(item: str) -> ParsedRule | None:
     if not item.startswith(("http://", "https://")):
         return None
-    host = urlsplit(item).hostname
+    parsed_url = urlsplit(item)
+    if parsed_url.path not in {"", "/"} or parsed_url.query or parsed_url.fragment:
+        return None
+    host = parsed_url.hostname
     domain = _clean_domain(host or "")
     return ParsedRule("DOMAIN-SUFFIX", domain) if domain else None
 
