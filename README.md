@@ -1,32 +1,24 @@
 # Adblock Rule Merge
 
-公开去广告规则合并器。项目会从多个公开上游规则源拉取数据，提取可用于 Mihomo/Clash 的域名级拦截规则，去重整理后生成一个 `reject.list`。
+面向 Mihomo/Clash 的去广告规则合并项目。仓库会定时拉取多个公开规则源，提取域名和 CIDR 规则，去重、剪枝后输出一个可直接订阅的 `reject.list`。
 
-这个项目只做去广告规则整理，不包含代理节点、私人订阅模板、服务器发布脚本或个人 override。
+本项目只整理去广告规则，不包含代理节点、订阅转换配置或客户端配置模板。
 
-## 输出文件
-
-默认构建会生成：
-
-```text
-dist/reject.list
-dist/build-report.json
-```
-
-持续更新的订阅链接：
+## 订阅链接
 
 ```text
 https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list
 ```
 
-`dist/reject.list` 使用纯文本规则列表格式，每行一条两段式规则：
+输出格式为 Mihomo/Clash classical rule-provider 文本格式，每行一条规则：
 
 ```text
 DOMAIN-SUFFIX,example.com
 DOMAIN-KEYWORD,tracker
+IP-CIDR,1.2.3.0/24
 ```
 
-在 Mihomo/Clash 兼容配置中可这样引用：
+## Mihomo/Clash 引用示例
 
 ```yaml
 rule-providers:
@@ -44,23 +36,14 @@ rules:
 
 ## Clash 覆写脚本示例
 
-如果客户端支持 JavaScript 覆写脚本，可以用下面的方式自动加入 rule-provider，并把去广告规则插到规则列表前面：
+适用于支持 JavaScript 覆写脚本的客户端。脚本会添加 `adblock` rule-provider，并把拦截规则插入到 `MATCH` / `FINAL` 之前。
 
 ```javascript
-function main(params) {
-    if (!params.proxies) return params;
-    overwriteAdblockRules(params);
-    return params;
-}
+function main(config) {
+    config["rule-providers"] = config["rule-providers"] || {};
+    config.rules = config.rules || [];
 
-function overwriteAdblockRules(params) {
-    var providerName = "adblock";
-    var adblockRule = "RULE-SET," + providerName + ",REJECT";
-
-    params["rule-providers"] = params["rule-providers"] || {};
-    params.rules = params.rules || [];
-
-    params["rule-providers"][providerName] = {
+    config["rule-providers"]["adblock"] = {
         type: "http",
         behavior: "classical",
         format: "text",
@@ -69,24 +52,51 @@ function overwriteAdblockRules(params) {
         interval: 86400,
     };
 
-    var upperRules = params.rules.map(function (rule) {
-        return String(rule).toUpperCase().trim();
+    var rule = "RULE-SET,adblock,REJECT";
+    var exists = config.rules.some(function (item) {
+        return String(item).toUpperCase().trim() === rule;
     });
-    if (upperRules.indexOf(adblockRule.toUpperCase()) !== -1) return;
+    if (exists) return config;
 
-    var insertIndex = params.rules.findIndex(function (rule) {
-        var upper = String(rule).toUpperCase();
+    var insertIndex = config.rules.findIndex(function (item) {
+        var upper = String(item).toUpperCase();
         return upper.indexOf("MATCH") === 0 || upper.indexOf("FINAL") === 0;
     });
-    if (insertIndex === -1) insertIndex = params.rules.length;
+    if (insertIndex === -1) insertIndex = config.rules.length;
 
-    params.rules.splice(insertIndex, 0, adblockRule);
+    config.rules.splice(insertIndex, 0, rule);
+    return config;
 }
 ```
 
+## 静态白名单
+
+仓库包含一个静态白名单文件：
+
+```text
+allowlist.list
+```
+
+它用于排除和分流规则冲突的去广告条目，避免常用服务域名被误拦截。构建时只读取仓库内的静态白名单，不会动态抓取其他项目的规则。
+
+白名单配置在：
+
+```text
+allowlist.yaml
+```
+
+## 输出文件
+
+```text
+dist/reject.list
+dist/build-report.json
+```
+
+`dist/build-report.json` 会记录各来源解析数量、白名单移除数量和最终规则数量。
+
 ## 规则来源
 
-来源配置在 [sources.yaml](sources.yaml)。初始来源参考 [`217heidai/adblockfilters`](https://github.com/217heidai/adblockfilters) 使用的公开上游列表，但本项目不会引用它生成好的成品规则，而是直接抓取这些原始来源并自行构建 YAML。
+来源配置在 [sources.yaml](sources.yaml)。本项目直接抓取公开上游原始规则并自行构建，不引用其他项目生成后的成品规则。
 
 | 名称 | 来源网站 | 原始规则 URL |
 | --- | --- | --- |
@@ -107,27 +117,20 @@ function overwriteAdblockRules(params) {
 | StevenBlack hosts | [StevenBlack/hosts](https://github.com/StevenBlack/hosts) | <https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts> |
 | Pollock hosts | [someonewhocares.org](https://someonewhocares.org/hosts/) | <https://someonewhocares.org/hosts/hosts> |
 
-请在公开分发生成文件前自行确认各上游项目的许可证和使用条款。
+请自行确认各上游项目的许可证和使用条款。
 
 ## 构建逻辑
 
-- 拉取 [sources.yaml](sources.yaml) 中配置的公开规则源
-- 提取 Clash/Mihomo `payload` 条目并转成纯文本规则行
-- 提取常见 Adblock Plus / AdGuard 域名规则，例如 `||example.com^`
-- 提取常见 hosts 条目，例如 `0.0.0.0 example.com`
-- 提取纯域名行
-- 规范化为以下规则类型：
-  - `DOMAIN`
-  - `DOMAIN-SUFFIX`
-  - `DOMAIN-KEYWORD`
-  - `IP-CIDR`
-  - `IP-CIDR6`
-- 移除完全重复的规则
-- 移除已被后缀规则覆盖的精确域名
-- 移除已被关键字规则覆盖的域名/后缀规则
-- 输出构建报告和各来源解析数量
+- 拉取 [sources.yaml](sources.yaml) 中的公开规则源
+- 提取 Clash/Mihomo `payload` 条目
+- 提取常见 Adblock Plus / AdGuard 域名规则
+- 提取 hosts 条目和纯域名行
+- 规范化为 `DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`IP-CIDR`、`IP-CIDR6`
+- 移除重复规则和被覆盖的规则
+- 应用静态白名单
+- 输出规则文件和构建报告
 
-MVP 阶段会跳过例外规则、网页元素隐藏规则、scriptlet 规则和暂不支持的规则类型，目标是生成稳定的域名级 reject rule-provider。
+暂不支持例外规则、网页元素隐藏规则、scriptlet 规则和其他非域名类广告过滤语法。
 
 ## 本地构建
 
@@ -154,13 +157,8 @@ python -m adblock_merge.builder
 
 [.github/workflows/build.yml](.github/workflows/build.yml) 会在 push、pull request、手动触发和每日定时任务时运行。
 
-CI 会执行：
-
-1. 安装依赖
-2. 运行测试
-3. 构建 `dist/reject.list`
-4. 如果生成文件发生变化，自动提交更新 `dist/reject.list` 和 `dist/build-report.json`
+CI 会安装依赖、运行测试、构建 `dist/reject.list`，并在生成文件变化时自动提交更新。
 
 ## 许可证
 
-本仓库代码使用 MIT License。生成规则文件会包含来自上游规则项目的数据，公开分发时请遵守对应上游项目的许可证和使用条款。
+本仓库代码使用 MIT License。生成规则文件包含上游规则项目的数据，使用时请遵守对应上游项目的许可证和使用条款。
