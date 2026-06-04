@@ -1,7 +1,0 @@
-sources:
-  - name: curated_broad_platform_domains
-    path: allowlist.list
-  # Curated false-positive whitelist maintained from public issue reports.
-  # Applied as exact matches only; child ad/tracker domains are not implicitly allowed.
-  - name: 217heidai_false_positive_whitelist
-    url: https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/white.txt

@@ -75,24 +75,6 @@ function main(config) {
 }
 ```
 
-## 静态白名单
-
-仓库包含一份本地维护的精确白名单：
-
-```text
-allowlist.list
-```
-
-它只用于移除明显过宽的平台主域规则，例如把 `DOMAIN-SUFFIX,google.com` 从 reject 中移除，但不会移除 `DOMAIN-SUFFIX,ads.google.com`、`DOMAIN-SUFFIX,pagead2.googlesyndication.com` 这类子域规则。
-
-白名单配置在：
-
-```text
-allowlist.yaml
-```
-
-构建时还会参考上游规则中的安全例外规则，以及 [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters/) `rules/white.txt` 中公开 issue 记录的误杀白名单。所有白名单都按精确匹配应用，不做后缀级放行。
-
 ## 输出文件
 
 ```text
@@ -101,30 +83,19 @@ dist/reject-expanded.yaml
 dist/build-report.json
 ```
 
-`dist/build-report.json` 会记录各来源解析数量、白名单移除数量和最终规则数量。
+`dist/build-report.json` 会记录各来源解析数量和最终规则数量。
 
 ## 规则来源
 
-来源配置在 [sources.yaml](sources.yaml)。本项目直接抓取公开上游原始规则并自行构建，不引用其他项目生成后的成品规则。
+来源配置在 [sources.yaml](sources.yaml)。当前来源接近服务器使用的 reject 规则模型：以公开聚合规则为主，再补充几个常用 reject 源。构建时不应用本仓库白名单，也不把上游 `@@` 例外转换为放行规则。
 
 | 名称 | 来源网站 | 原始规则 URL |
 | --- | --- | --- |
-| AdGuard Base filter | [AdGuard Filters Registry](https://github.com/AdguardTeam/FiltersRegistry) | <https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt> |
-| AdGuard Chinese filter | [AdGuard Filters Registry](https://github.com/AdguardTeam/FiltersRegistry) | <https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt> |
-| AdGuard Mobile Ads filter | [AdGuard Filters](https://github.com/AdguardTeam/AdguardFilters) | <https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt> |
-| AdGuard DNS filter | [AdGuard DNS Filter](https://github.com/AdguardTeam/AdGuardSDNSFilter) | <https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt> |
-| AdRules DNS List | [Cats-Team/AdRules](https://github.com/Cats-Team/AdRules) | <https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt> |
-| CJX's Annoyance List | [cjx82630/cjxlist](https://github.com/cjx82630/cjxlist) | <https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt> |
-| EasyList | [EasyList](https://easylist.to/) | <https://easylist-downloads.adblockplus.org/easylist.txt> |
-| EasyList China | [EasyList China](https://github.com/easylist/easylistchina) | <https://easylist-downloads.adblockplus.org/easylistchina.txt> |
-| EasyPrivacy | [EasyPrivacy](https://easylist.to/) | <https://easylist-downloads.adblockplus.org/easyprivacy.txt> |
-| xinggsf mv | [xinggsf/Adblock-Plus-Rule](https://github.com/xinggsf/Adblock-Plus-Rule) | <https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt> |
-| jiekouAD | [damengzhu/banad](https://github.com/damengzhu/banad) | <https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt> |
-| AWAvenue Ads Rule | [TG-Twilight/AWAvenue-Ads-Rule](https://github.com/TG-Twilight/AWAvenue-Ads-Rule) | <https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/AWAvenue-Ads-Rule.txt> |
-| DNS-Blocklists Light | [HaGeZi DNS Blocklists](https://github.com/hagezi/dns-blocklists) | <https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt> |
-| OISD Basic | [OISD](https://oisd.nl/) | <https://abp.oisd.nl/basic/> |
-| StevenBlack hosts | [StevenBlack/hosts](https://github.com/StevenBlack/hosts) | <https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts> |
-| Pollock hosts | [someonewhocares.org](https://someonewhocares.org/hosts/) | <https://someonewhocares.org/hosts/hosts> |
+| 217heidai adblockfilters | [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters) | <https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml> |
+| Loyalsoldier reject | [Loyalsoldier/clash-rules](https://github.com/Loyalsoldier/clash-rules) | <https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt> |
+| BlackMatrix7 Privacy | [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) | <https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml> |
+| anti-AD | [privacy-protection-tools/anti-AD](https://github.com/privacy-protection-tools/anti-AD) | <https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml> |
+| yhosts | [VeleSila/yhosts](https://github.com/VeleSila/yhosts) | <https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts> |
 
 请自行确认各上游项目的许可证和使用条款。
 
@@ -135,8 +106,6 @@ dist/build-report.json
 - 提取常见 Adblock Plus / AdGuard 域名规则
 - 提取 hosts 条目和纯域名行
 - 规范化为 `DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`IP-CIDR`、`IP-CIDR6`
-- 解析可安全表达为 DNS/Clash 规则的全局例外规则
-- 按精确匹配应用白名单
 - 移除重复规则和被覆盖的规则
 - 输出规则文件和构建报告
 

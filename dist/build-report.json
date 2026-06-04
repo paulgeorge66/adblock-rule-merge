@@ -1,106 +1,29 @@
 {
   "sources": {
-    "adguard_base_filter": {
-      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt",
-      "parsed_rules": 59892,
-      "safe_exception_rules": 25
+    "custom_adblock": {
+      "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
+      "parsed_rules": 189002
     },
-    "adguard_chinese_filter": {
-      "url": "https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt",
-      "parsed_rules": 6047,
-      "safe_exception_rules": 11
+    "loyal_reject": {
+      "url": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
+      "parsed_rules": 169364
     },
-    "adguard_mobile_ads_filter": {
-      "url": "https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt",
-      "parsed_rules": 898,
-      "safe_exception_rules": 0
+    "bm7_privacy": {
+      "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml",
+      "parsed_rules": 20
     },
-    "adguard_dns_filter": {
-      "url": "https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt",
-      "parsed_rules": 159856,
-      "safe_exception_rules": 11
+    "anti_ad": {
+      "url": "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
+      "parsed_rules": 107377
     },
-    "adrules_dns_list": {
-      "url": "https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt",
-      "parsed_rules": 179818,
-      "safe_exception_rules": 0
-    },
-    "cjx_annoyance_list": {
-      "url": "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt",
-      "parsed_rules": 114,
-      "safe_exception_rules": 0
-    },
-    "easylist": {
-      "url": "https://easylist-downloads.adblockplus.org/easylist.txt",
-      "parsed_rules": 50684,
-      "safe_exception_rules": 0
-    },
-    "easylist_china": {
-      "url": "https://easylist-downloads.adblockplus.org/easylistchina.txt",
-      "parsed_rules": 5908,
-      "safe_exception_rules": 11
-    },
-    "easyprivacy": {
-      "url": "https://easylist-downloads.adblockplus.org/easyprivacy.txt",
-      "parsed_rules": 40484,
-      "safe_exception_rules": 4
-    },
-    "xinggsf_mv": {
-      "url": "https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt",
-      "parsed_rules": 27,
-      "safe_exception_rules": 0
-    },
-    "jiekouad": {
-      "url": "https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt",
-      "parsed_rules": 4482,
-      "safe_exception_rules": 4
-    },
-    "awavenue_ads_rule": {
-      "url": "https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/AWAvenue-Ads-Rule.txt",
-      "parsed_rules": 906,
-      "safe_exception_rules": 0
-    },
-    "dns_blocklists_light": {
-      "url": "https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt",
-      "parsed_rules": 67394,
-      "safe_exception_rules": 0
-    },
-    "oisd_basic": {
-      "url": "https://abp.oisd.nl/basic/",
-      "parsed_rules": 58458,
-      "safe_exception_rules": 0
-    },
-    "stevenblack_hosts": {
-      "url": "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
-      "parsed_rules": 83596,
-      "safe_exception_rules": 0
-    },
-    "pollock_hosts": {
-      "url": "https://someonewhocares.org/hosts/hosts",
-      "parsed_rules": 12813,
-      "safe_exception_rules": 0
+    "yhosts": {
+      "url": "https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts",
+      "parsed_rules": 6418
     }
   },
-  "allowlist": {
-    "static_rules": 217,
-    "upstream_exception_rules": 44,
-    "total_rules": 261,
-    "removed_rules": 220,
-    "mode": "exact",
-    "sources": {
-      "curated_broad_platform_domains": {
-        "location": "allowlist.list",
-        "parsed_rules": 49
-      },
-      "217heidai_false_positive_whitelist": {
-        "location": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/white.txt",
-        "parsed_rules": 168
-      }
-    }
-  },
-  "total_rules": 306218,
+  "total_rules": 243578,
   "expanded_rules": {
     "path": "dist/reject-expanded.yaml",
-    "rules": 306218
+    "rules": 243578
   }
 }

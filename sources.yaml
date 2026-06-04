@@ -1,35 +1,13 @@
 sources:
-  # Source set follows the public upstream list used by 217heidai/adblockfilters.
-  # This project fetches these original lists directly and builds its own Mihomo YAML.
-  - name: adguard_base_filter
-    url: https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_2_Base/filter.txt
-  - name: adguard_chinese_filter
-    url: https://raw.githubusercontent.com/AdguardTeam/FiltersRegistry/master/filters/filter_224_Chinese/filter.txt
-  - name: adguard_mobile_ads_filter
-    url: https://raw.githubusercontent.com/AdguardTeam/AdguardFilters/master/MobileFilter/sections/adservers.txt
-  - name: adguard_dns_filter
-    url: https://adguardteam.github.io/AdGuardSDNSFilter/Filters/filter.txt
-  - name: adrules_dns_list
-    url: https://raw.githubusercontent.com/Cats-Team/AdRules/main/dns.txt
-  - name: cjx_annoyance_list
-    url: https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt
-  - name: easylist
-    url: https://easylist-downloads.adblockplus.org/easylist.txt
-  - name: easylist_china
-    url: https://easylist-downloads.adblockplus.org/easylistchina.txt
-  - name: easyprivacy
-    url: https://easylist-downloads.adblockplus.org/easyprivacy.txt
-  - name: xinggsf_mv
-    url: https://raw.githubusercontent.com/xinggsf/Adblock-Plus-Rule/master/mv.txt
-  - name: jiekouad
-    url: https://raw.githubusercontent.com/damengzhu/banad/main/jiekouAD.txt
-  - name: awavenue_ads_rule
-    url: https://raw.githubusercontent.com/TG-Twilight/AWAvenue-Ads-Rule/main/AWAvenue-Ads-Rule.txt
-  - name: dns_blocklists_light
-    url: https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/light.txt
-  - name: oisd_basic
-    url: https://abp.oisd.nl/basic/
-  - name: stevenblack_hosts
-    url: https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-  - name: pollock_hosts
-    url: https://someonewhocares.org/hosts/hosts
+  # Close to the VPS reject source model: generated aggregate rules plus a few
+  # extra public reject lists. No whitelist is applied in this repository.
+  - name: custom_adblock
+    url: https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml
+  - name: loyal_reject
+    url: https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt
+  - name: bm7_privacy
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml
+  - name: anti_ad
+    url: https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml
+  - name: yhosts
+    url: https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts
