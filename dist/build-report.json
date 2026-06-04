@@ -98,5 +98,9 @@
       }
     }
   },
-  "total_rules": 306217
+  "total_rules": 306217,
+  "expanded_rules": {
+    "path": "dist/reject-expanded.yaml",
+    "rules": 306217
+  }
 }

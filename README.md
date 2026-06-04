@@ -18,6 +18,12 @@ DOMAIN-KEYWORD,tracker
 IP-CIDR,1.2.3.0/24
 ```
 
+需要直接放进 Clash `rules:` 时，可以引用完整展开片段：
+
+```text
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-expanded.yaml
+```
+
 ## Mihomo/Clash 引用示例
 
 ```yaml
@@ -91,6 +97,7 @@ allowlist.yaml
 
 ```text
 dist/reject.list
+dist/reject-expanded.yaml
 dist/build-report.json
 ```
 
@@ -160,7 +167,7 @@ python -m adblock_merge.builder
 
 [.github/workflows/build.yml](.github/workflows/build.yml) 会在 push、pull request、手动触发和每日定时任务时运行。
 
-CI 会安装依赖、运行测试、构建 `dist/reject.list`，并在生成文件变化时自动提交更新。
+CI 会安装依赖、运行测试、构建 `dist/reject.list` 和 `dist/reject-expanded.yaml`，并在生成文件变化时自动提交更新。
 
 ## 许可证
 

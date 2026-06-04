@@ -13,6 +13,7 @@ from adblock_merge.builder import (
     normalize_upstream_exception_line,
     parse_rules,
     prune_shadowed_rules,
+    render_expanded_rules_yaml,
     render_rule_provider_text,
 )
 
@@ -138,6 +139,18 @@ bad_label_.example.com
         self.assertEqual(
             rendered,
             "DOMAIN-SUFFIX,example.com\nDOMAIN-KEYWORD,tracker\n",
+        )
+
+    def test_render_expanded_rules_yaml(self):
+        rendered = render_expanded_rules_yaml(
+            [
+                ParsedRule("DOMAIN-SUFFIX", "example.com"),
+                ParsedRule("DOMAIN-KEYWORD", "tracker"),
+            ]
+        )
+        self.assertEqual(
+            rendered,
+            "  - DOMAIN-SUFFIX,example.com,REJECT\n  - DOMAIN-KEYWORD,tracker,REJECT\n",
         )
 
     def test_allowlist_is_exact_and_runs_before_pruning(self):

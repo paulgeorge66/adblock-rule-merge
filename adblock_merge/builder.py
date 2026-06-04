@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCES = ROOT / "sources.yaml"
 DEFAULT_ALLOWLIST = ROOT / "allowlist.yaml"
 DEFAULT_OUTPUT = ROOT / "dist" / "reject.list"
+DEFAULT_EXPANDED_OUTPUT = ROOT / "dist" / "reject-expanded.yaml"
 DEFAULT_REPORT = ROOT / "dist" / "build-report.json"
 
 CIDR_V4_RE = re.compile(r"^\d+\.\d+\.\d+\.\d+/\d+$")
@@ -354,6 +355,11 @@ def render_rule_provider_text(rules: Iterable[ParsedRule]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_expanded_rules_yaml(rules: Iterable[ParsedRule]) -> str:
+    lines = [f"  - {rule.render()},REJECT" for rule in rules]
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
 def load_sources(path: Path) -> list[dict]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict) or not isinstance(data.get("sources"), list):
@@ -389,9 +395,14 @@ def load_allowlist(path: Path) -> tuple[list[ParsedRule], dict]:
     return rules, {"sources": source_report}
 
 
-def write_outputs(rules: list[ParsedRule], report: dict, output: Path, report_path: Path) -> None:
+def write_outputs(rules: list[ParsedRule], report: dict, output: Path, expanded_output: Path, report_path: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(render_rule_provider_text(rules), encoding="utf-8", newline="\n")
+    expanded_output.write_text(render_expanded_rules_yaml(rules), encoding="utf-8", newline="\n")
+    report["expanded_rules"] = {
+        "path": str(expanded_output.relative_to(ROOT)),
+        "rules": len(rules),
+    }
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
@@ -400,6 +411,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sources", type=Path, default=DEFAULT_SOURCES)
     parser.add_argument("--allowlist", type=Path, default=DEFAULT_ALLOWLIST)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--expanded-output", type=Path, default=DEFAULT_EXPANDED_OUTPUT)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     args = parser.parse_args(argv)
 
@@ -407,8 +419,9 @@ def main(argv: list[str] | None = None) -> int:
     allowlist, allowlist_report = load_allowlist(args.allowlist)
     rules, report = build_rules_from_sources(sources, static_allowlist=allowlist)
     report["allowlist"]["sources"] = allowlist_report["sources"]
-    write_outputs(rules, report, args.output, args.report)
+    write_outputs(rules, report, args.output, args.expanded_output, args.report)
     print(f"Wrote {args.output}")
+    print(f"Wrote {args.expanded_output}")
     print(f"Wrote {args.report}")
     print(f"Total rules: {report['total_rules']}")
     return 0
