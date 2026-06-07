@@ -2,11 +2,11 @@
   "sources": {
     "custom_adblock": {
       "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
-      "parsed_rules": 197392
+      "parsed_rules": 193304
     },
     "loyal_reject": {
       "url": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
-      "parsed_rules": 169994
+      "parsed_rules": 170310
     },
     "bm7_privacy": {
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml",
@@ -14,16 +14,16 @@
     },
     "anti_ad": {
       "url": "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
-      "parsed_rules": 105334
+      "parsed_rules": 106021
     },
     "yhosts": {
       "url": "https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts",
       "parsed_rules": 6418
     }
   },
-  "total_rules": 252169,
+  "total_rules": 249275,
   "expanded_rules": {
     "path": "dist/reject-expanded.yaml",
-    "rules": 252169
+    "rules": 249275
   }
 }
