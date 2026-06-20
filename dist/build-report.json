@@ -2,11 +2,11 @@
   "sources": {
     "custom_adblock": {
       "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
-      "parsed_rules": 178720
+      "parsed_rules": 177601
     },
     "loyal_reject": {
       "url": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
-      "parsed_rules": 166615
+      "parsed_rules": 166925
     },
     "bm7_privacy": {
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml",
@@ -21,9 +21,9 @@
       "parsed_rules": 6418
     }
   },
-  "total_rules": 231818,
+  "total_rules": 229049,
   "expanded_rules": {
     "path": "dist/reject-expanded.yaml",
-    "rules": 231818
+    "rules": 229049
   }
 }
