@@ -9,6 +9,7 @@ from adblock_merge.builder import (
     normalize_upstream_exception_line,
     parse_rules,
     prune_shadowed_rules,
+    render_action_rule_parts,
     render_expanded_rules_yaml,
     render_rule_provider_text,
 )
@@ -174,6 +175,19 @@ plain-ad.example.test
             rendered,
             "  - DOMAIN-SUFFIX,example.com,REJECT\n  - DOMAIN-KEYWORD,tracker,REJECT\n",
         )
+
+    def test_render_action_rule_parts_creates_four_complete_parts(self):
+        rules = [ParsedRule("DOMAIN-SUFFIX", f"ad-{index}.example.com") for index in range(20)]
+        parts = render_action_rule_parts(rules)
+
+        self.assertEqual(len(parts), 4)
+        self.assertTrue(all(part for part in parts))
+        rendered_lines = "".join(parts).splitlines()
+        self.assertEqual(
+            rendered_lines,
+            [f"DOMAIN-SUFFIX,ad-{index}.example.com,REJECT" for index in range(20)],
+        )
+        self.assertTrue(all(line.endswith(",REJECT") for line in rendered_lines))
 
     def test_build_rules_from_sources_uses_local_fixture_urls_without_allowlist(self):
         source_a = "payload:\n  - '+.example.com'\n  - DOMAIN,ads.example.com\n"

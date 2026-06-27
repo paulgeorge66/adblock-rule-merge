@@ -24,6 +24,15 @@ IP-CIDR,1.2.3.0/24
 https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-expanded.yaml
 ```
 
+需要每行自带 `REJECT` 动作时，可使用以下四个分片。格式为 `DOMAIN-SUFFIX,example.com,REJECT`，每个文件小于 5 MB：
+
+```text
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-with-action-part-1.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-with-action-part-2.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-with-action-part-3.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-with-action-part-4.list
+```
+
 ## Mihomo/Clash 引用示例
 
 ```yaml
@@ -80,6 +89,10 @@ function main(config) {
 ```text
 dist/reject.list
 dist/reject-expanded.yaml
+dist/reject-with-action-part-1.list
+dist/reject-with-action-part-2.list
+dist/reject-with-action-part-3.list
+dist/reject-with-action-part-4.list
 dist/build-report.json
 ```
 
@@ -136,7 +149,7 @@ python -m adblock_merge.builder
 
 [.github/workflows/build.yml](.github/workflows/build.yml) 会在 push、pull request、手动触发和每日定时任务时运行。
 
-CI 会安装依赖、运行测试、构建 `dist/reject.list` 和 `dist/reject-expanded.yaml`，并在生成文件变化时自动提交更新。
+CI 会安装依赖、运行测试、构建全部 `dist` 规则文件，并在生成文件变化时自动提交更新。
 
 ## 许可证
 

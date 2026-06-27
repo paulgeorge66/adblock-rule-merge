@@ -21,7 +21,10 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCES = ROOT / "sources.yaml"
 DEFAULT_OUTPUT = ROOT / "dist" / "reject.list"
 DEFAULT_EXPANDED_OUTPUT = ROOT / "dist" / "reject-expanded.yaml"
+DEFAULT_ACTION_PART_PREFIX = ROOT / "dist" / "reject-with-action-part"
 DEFAULT_REPORT = ROOT / "dist" / "build-report.json"
+ACTION_PART_COUNT = 4
+MAX_ACTION_PART_BYTES = 5_000_000
 
 CIDR_V4_RE = re.compile(r"^\d+\.\d+\.\d+\.\d+/\d+$")
 CIDR_V6_RE = re.compile(r"^[0-9a-fA-F:]+/\d+$")
@@ -301,6 +304,40 @@ def render_expanded_rules_yaml(rules: Iterable[ParsedRule]) -> str:
     return "\n".join(lines) + ("\n" if lines else "")
 
 
+def render_action_rule_parts(rules: Iterable[ParsedRule], part_count: int = ACTION_PART_COUNT) -> list[str]:
+    lines = [f"{rule.render()},REJECT\n" for rule in rules]
+    if part_count < 1:
+        raise ValueError("part_count must be positive")
+    if len(lines) < part_count:
+        raise ValueError("not enough rules to create the requested number of parts")
+
+    total_bytes = sum(len(line.encode("utf-8")) for line in lines)
+    target_bytes = (total_bytes + part_count - 1) // part_count
+    parts: list[list[str]] = [[]]
+    current_bytes = 0
+
+    for index, line in enumerate(lines):
+        line_bytes = len(line.encode("utf-8"))
+        remaining_lines = len(lines) - index
+        remaining_parts = part_count - len(parts)
+        if (
+            len(parts) < part_count
+            and parts[-1]
+            and current_bytes + line_bytes > target_bytes
+            and remaining_lines > remaining_parts
+        ):
+            parts.append([])
+            current_bytes = 0
+        parts[-1].append(line)
+        current_bytes += line_bytes
+
+    while len(parts) < part_count:
+        donor = max(range(len(parts)), key=lambda item: len(parts[item]))
+        parts.insert(donor + 1, [parts[donor].pop()])
+
+    return ["".join(part) for part in parts]
+
+
 def load_sources(path: Path) -> list[dict]:
     data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict) or not isinstance(data.get("sources"), list):
@@ -308,14 +345,37 @@ def load_sources(path: Path) -> list[dict]:
     return data["sources"]
 
 
-def write_outputs(rules: list[ParsedRule], report: dict, output: Path, expanded_output: Path, report_path: Path) -> None:
+def write_outputs(
+    rules: list[ParsedRule],
+    report: dict,
+    output: Path,
+    expanded_output: Path,
+    action_part_prefix: Path,
+    report_path: Path,
+) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(render_rule_provider_text(rules), encoding="utf-8", newline="\n")
     expanded_output.write_text(render_expanded_rules_yaml(rules), encoding="utf-8", newline="\n")
+    action_parts = render_action_rule_parts(rules)
+    action_part_report = []
+    for index, part_text in enumerate(action_parts, start=1):
+        part_path = action_part_prefix.with_name(f"{action_part_prefix.name}-{index}.list")
+        part_bytes = len(part_text.encode("utf-8"))
+        if part_bytes >= MAX_ACTION_PART_BYTES:
+            raise ValueError(f"{part_path.name} is {part_bytes} bytes; each part must be under {MAX_ACTION_PART_BYTES}")
+        part_path.write_text(part_text, encoding="utf-8", newline="\n")
+        action_part_report.append(
+            {
+                "path": part_path.relative_to(ROOT).as_posix(),
+                "rules": part_text.count("\n"),
+                "bytes": part_bytes,
+            }
+        )
     report["expanded_rules"] = {
         "path": expanded_output.relative_to(ROOT).as_posix(),
         "rules": len(rules),
     }
+    report["action_rule_parts"] = action_part_report
     report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
@@ -324,14 +384,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--sources", type=Path, default=DEFAULT_SOURCES)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--expanded-output", type=Path, default=DEFAULT_EXPANDED_OUTPUT)
+    parser.add_argument("--action-part-prefix", type=Path, default=DEFAULT_ACTION_PART_PREFIX)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     args = parser.parse_args(argv)
 
     sources = load_sources(args.sources)
     rules, report = build_rules_from_sources(sources)
-    write_outputs(rules, report, args.output, args.expanded_output, args.report)
+    write_outputs(rules, report, args.output, args.expanded_output, args.action_part_prefix, args.report)
     print(f"Wrote {args.output}")
     print(f"Wrote {args.expanded_output}")
+    print(f"Wrote {ACTION_PART_COUNT} action rule parts")
     print(f"Wrote {args.report}")
     print(f"Total rules: {report['total_rules']}")
     return 0
