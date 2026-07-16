@@ -2,11 +2,11 @@
   "sources": {
     "custom_adblock": {
       "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
-      "parsed_rules": 184308
+      "parsed_rules": 184978
     },
     "loyal_reject": {
       "url": "https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt",
-      "parsed_rules": 166369
+      "parsed_rules": 166614
     },
     "bm7_privacy": {
       "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml",
@@ -14,38 +14,38 @@
     },
     "anti_ad": {
       "url": "https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml",
-      "parsed_rules": 99436
+      "parsed_rules": 99986
     },
     "yhosts": {
       "url": "https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts",
       "parsed_rules": 6418
     }
   },
-  "total_rules": 227411,
+  "total_rules": 228245,
   "expanded_rules": {
     "path": "dist/reject-expanded.yaml",
-    "rules": 227411
+    "rules": 228245
   },
   "action_rule_parts": [
     {
       "path": "dist/reject-with-action-part-1.list",
-      "rules": 56864,
-      "bytes": 2325204
+      "rules": 57084,
+      "bytes": 2333198
     },
     {
       "path": "dist/reject-with-action-part-2.list",
-      "rules": 56981,
-      "bytes": 2325226
+      "rules": 57237,
+      "bytes": 2333213
     },
     {
       "path": "dist/reject-with-action-part-3.list",
-      "rules": 56503,
-      "bytes": 2325206
+      "rules": 56657,
+      "bytes": 2333219
     },
     {
       "path": "dist/reject-with-action-part-4.list",
-      "rules": 57063,
-      "bytes": 2325307
+      "rules": 57267,
+      "bytes": 2333248
     }
   ]
 }
