@@ -3,41 +3,37 @@
     "custom_adblock": {
       "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
       "parsed_rules": 193067
-    },
-    "bm7_privacy": {
-      "url": "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml",
-      "parsed_rules": 20
     }
   },
-  "total_rules": 190451,
+  "total_rules": 193067,
   "behavior_split": {
-    "domains": 190431,
-    "misc": 20
+    "domains": 193067,
+    "misc": 0
   },
   "expanded_rules": {
     "path": "dist/reject-expanded.yaml",
-    "rules": 190451
+    "rules": 193067
   },
   "action_rule_parts": [
     {
       "path": "dist/reject-with-action-part-1.list",
-      "rules": 47750,
-      "bytes": 1968705
+      "rules": 48230,
+      "bytes": 1998804
     },
     {
       "path": "dist/reject-with-action-part-2.list",
-      "rules": 47401,
-      "bytes": 1968681
+      "rules": 48240,
+      "bytes": 1998841
     },
     {
       "path": "dist/reject-with-action-part-3.list",
-      "rules": 47416,
-      "bytes": 1968670
+      "rules": 48008,
+      "bytes": 1998825
     },
     {
       "path": "dist/reject-with-action-part-4.list",
-      "rules": 47884,
-      "bytes": 1968781
+      "rules": 48589,
+      "bytes": 1998909
     }
   ]
 }
