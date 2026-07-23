@@ -1,13 +1,14 @@
 sources:
-  # Close to the VPS reject source model: generated aggregate rules plus a few
-  # extra public reject lists. No whitelist is applied in this repository.
+  # custom_adblock (217heidai/adblockfilters) is a well-maintained meta-aggregator
+  # updated every ~8h; it already pulls from AdGuard's FiltersRegistry and similar
+  # upstreams, and its own maintainer has already dropped anti-AD and yhosts as
+  # unreliable (see README + https://github.com/Mosney/anti-anti-AD for the
+  # documented anti-AD dispute). loyal_reject/anti_ad/yhosts were removed here for
+  # the same reasons: yhosts is archived/stale since 2025-03-05, anti_ad has the
+  # anti-anti-AD credibility dispute, and loyal_reject's marginal contribution
+  # after dedup against custom_adblock was the lowest of the three (~7% of final
+  # total) with no compensating quality signal. No whitelist is applied here.
   - name: custom_adblock
     url: https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml
-  - name: loyal_reject
-    url: https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt
   - name: bm7_privacy
     url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml
-  - name: anti_ad
-    url: https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml
-  - name: yhosts
-    url: https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts

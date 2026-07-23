@@ -20,6 +20,8 @@ import yaml
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCES = ROOT / "sources.yaml"
 DEFAULT_OUTPUT = ROOT / "dist" / "reject.list"
+DEFAULT_DOMAINS_OUTPUT = ROOT / "dist" / "reject-domains.list"
+DEFAULT_MISC_OUTPUT = ROOT / "dist" / "reject-misc.list"
 DEFAULT_EXPANDED_OUTPUT = ROOT / "dist" / "reject-expanded.yaml"
 DEFAULT_ACTION_PART_PREFIX = ROOT / "dist" / "reject-with-action-part"
 DEFAULT_REPORT = ROOT / "dist" / "build-report.json"
@@ -43,6 +45,13 @@ TYPE_ORDER = {
     "IP-CIDR": 4,
     "IP-CIDR6": 5,
 }
+
+# reject.list is ~99.99% DOMAIN/DOMAIN-SUFFIX and is checked first for every
+# connection, so it is the single biggest cost of mihomo's linear "classical"
+# rule-provider scan. Splitting it lets mihomo use its trie-based "domain"
+# rule-provider behavior for the bulk of the list, leaving only the handful of
+# DOMAIN-KEYWORD/IP-CIDR rules in a small classical leftover file.
+DOMAIN_TYPES = {"DOMAIN", "DOMAIN-SUFFIX"}
 
 
 @dataclass(frozen=True, order=True)
@@ -299,6 +308,24 @@ def render_rule_provider_text(rules: Iterable[ParsedRule]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def split_rules_by_behavior(rules: Iterable[ParsedRule]) -> tuple[list[ParsedRule], list[ParsedRule]]:
+    domains: list[ParsedRule] = []
+    misc: list[ParsedRule] = []
+    for rule in rules:
+        (domains if rule.rule_type in DOMAIN_TYPES else misc).append(rule)
+    return domains, misc
+
+
+def render_domain_behavior_text(rules: Iterable[ParsedRule]) -> str:
+    lines = []
+    for rule in rules:
+        if rule.rule_type == "DOMAIN-SUFFIX":
+            lines.append(f"+.{rule.value}")
+        else:
+            lines.append(rule.value)
+    return "\n".join(lines) + ("\n" if lines else "")
+
+
 def render_expanded_rules_yaml(rules: Iterable[ParsedRule]) -> str:
     lines = [f"  - {rule.render()},REJECT" for rule in rules]
     return "\n".join(lines) + ("\n" if lines else "")
@@ -352,9 +379,17 @@ def write_outputs(
     expanded_output: Path,
     action_part_prefix: Path,
     report_path: Path,
+    domains_output: Path,
+    misc_output: Path,
 ) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(render_rule_provider_text(rules), encoding="utf-8", newline="\n")
+
+    domains, misc = split_rules_by_behavior(rules)
+    domains_output.write_text(render_domain_behavior_text(domains), encoding="utf-8", newline="\n")
+    misc_output.write_text(render_rule_provider_text(misc) if misc else "", encoding="utf-8", newline="\n")
+    report["behavior_split"] = {"domains": len(domains), "misc": len(misc)}
+
     expanded_output.write_text(render_expanded_rules_yaml(rules), encoding="utf-8", newline="\n")
     action_parts = render_action_rule_parts(rules)
     action_part_report = []
@@ -383,6 +418,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Merge public adblock rules into text rule lists.")
     parser.add_argument("--sources", type=Path, default=DEFAULT_SOURCES)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument("--domains-output", type=Path, default=DEFAULT_DOMAINS_OUTPUT)
+    parser.add_argument("--misc-output", type=Path, default=DEFAULT_MISC_OUTPUT)
     parser.add_argument("--expanded-output", type=Path, default=DEFAULT_EXPANDED_OUTPUT)
     parser.add_argument("--action-part-prefix", type=Path, default=DEFAULT_ACTION_PART_PREFIX)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
@@ -390,8 +427,19 @@ def main(argv: list[str] | None = None) -> int:
 
     sources = load_sources(args.sources)
     rules, report = build_rules_from_sources(sources)
-    write_outputs(rules, report, args.output, args.expanded_output, args.action_part_prefix, args.report)
+    write_outputs(
+        rules,
+        report,
+        args.output,
+        args.expanded_output,
+        args.action_part_prefix,
+        args.report,
+        args.domains_output,
+        args.misc_output,
+    )
     print(f"Wrote {args.output}")
+    print(f"Wrote {args.domains_output}")
+    print(f"Wrote {args.misc_output}")
     print(f"Wrote {args.expanded_output}")
     print(f"Wrote {ACTION_PART_COUNT} action rule parts")
     print(f"Wrote {args.report}")

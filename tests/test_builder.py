@@ -10,8 +10,10 @@ from adblock_merge.builder import (
     parse_rules,
     prune_shadowed_rules,
     render_action_rule_parts,
+    render_domain_behavior_text,
     render_expanded_rules_yaml,
     render_rule_provider_text,
+    split_rules_by_behavior,
 )
 
 
@@ -216,6 +218,26 @@ plain-ad.example.test
         self.assertEqual(report["sources"]["a"]["parsed_rules"], 2)
         self.assertEqual(report["sources"]["b"]["parsed_rules"], 2)
         self.assertNotIn("allowlist", report)
+
+    def test_split_rules_by_behavior_groups_domains_from_misc(self):
+        rules = [
+            ParsedRule("DOMAIN-SUFFIX", "example.com"),
+            ParsedRule("DOMAIN", "exact.example.com"),
+            ParsedRule("DOMAIN-KEYWORD", "tracker"),
+            ParsedRule("IP-CIDR", "1.2.3.0/24"),
+        ]
+        domains, misc = split_rules_by_behavior(rules)
+        self.assertEqual(domains, [ParsedRule("DOMAIN-SUFFIX", "example.com"), ParsedRule("DOMAIN", "exact.example.com")])
+        self.assertEqual(misc, [ParsedRule("DOMAIN-KEYWORD", "tracker"), ParsedRule("IP-CIDR", "1.2.3.0/24")])
+
+    def test_render_domain_behavior_text_uses_plus_prefix_for_suffix(self):
+        text = render_domain_behavior_text(
+            [
+                ParsedRule("DOMAIN-SUFFIX", "example.com"),
+                ParsedRule("DOMAIN", "exact.example.com"),
+            ]
+        )
+        self.assertEqual(text, "+.example.com\nexact.example.com\n")
 
 
 if __name__ == "__main__":

@@ -6,11 +6,20 @@
 
 ## 订阅链接
 
+规则里 99.99% 是 `DOMAIN`/`DOMAIN-SUFFIX`。如果整份规则都用 Mihomo `classical` rule-provider behavior 加载，客户端每次连接都要线性扫描一遍——这份表有 20 万+行，代价很实。推荐按 behavior 拆开订阅：
+
+```text
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-domains.list
+https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-misc.list
+```
+
+`reject-domains.list` 给 `behavior: domain` 的 rule-provider 用，每行是纯域名（`DOMAIN-SUFFIX` 转成 `+.` 前缀），Mihomo 用 trie 匹配，跟条目数基本无关。`reject-misc.list` 是剩下的 `DOMAIN-KEYWORD`/`IP-CIDR`/`IP-CIDR6`（通常几十条），继续用 `behavior: classical`。
+
+仍然保留原来的单文件、两段式 classical 格式，供不区分 behavior 的客户端或人工查看使用：
+
 ```text
 https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list
 ```
-
-输出格式为 Mihomo/Clash classical rule-provider 文本格式，每行一条规则：
 
 ```text
 DOMAIN-SUFFIX,example.com
@@ -37,16 +46,24 @@ https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reje
 
 ```yaml
 rule-providers:
-  adblock:
+  adblock-domains:
+    type: http
+    behavior: domain
+    format: text
+    url: https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-domains.list
+    path: ./ruleset/adblock-domains.list
+    interval: 86400
+  adblock-misc:
     type: http
     behavior: classical
     format: text
-    url: https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list
-    path: ./ruleset/adblock.list
+    url: https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-misc.list
+    path: ./ruleset/adblock-misc.list
     interval: 86400
 
 rules:
-  - RULE-SET,adblock,REJECT
+  - RULE-SET,adblock-domains,REJECT
+  - RULE-SET,adblock-misc,REJECT
 ```
 
 ## Clash 覆写脚本示例
@@ -58,20 +75,31 @@ function main(config) {
     config["rule-providers"] = config["rule-providers"] || {};
     config.rules = config.rules || [];
 
-    config["rule-providers"]["adblock"] = {
+    config["rule-providers"]["adblock-domains"] = {
+        type: "http",
+        behavior: "domain",
+        format: "text",
+        url: "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-domains.list",
+        path: "./ruleset/adblock-domains.list",
+        interval: 86400,
+    };
+    config["rule-providers"]["adblock-misc"] = {
         type: "http",
         behavior: "classical",
         format: "text",
-        url: "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject.list",
-        path: "./ruleset/adblock.list",
+        url: "https://raw.githubusercontent.com/paulgeorge66/adblock-rule-merge/main/dist/reject-misc.list",
+        path: "./ruleset/adblock-misc.list",
         interval: 86400,
     };
 
-    var rule = "RULE-SET,adblock,REJECT";
-    var exists = config.rules.some(function (item) {
-        return String(item).toUpperCase().trim() === rule;
+    var newRules = ["RULE-SET,adblock-domains,REJECT", "RULE-SET,adblock-misc,REJECT"];
+    var existingUpper = config.rules.map(function (item) {
+        return String(item).toUpperCase().trim();
     });
-    if (exists) return config;
+    newRules = newRules.filter(function (rule) {
+        return existingUpper.indexOf(rule) === -1;
+    });
+    if (newRules.length === 0) return config;
 
     var insertIndex = config.rules.findIndex(function (item) {
         var upper = String(item).toUpperCase();
@@ -79,7 +107,7 @@ function main(config) {
     });
     if (insertIndex === -1) insertIndex = config.rules.length;
 
-    config.rules.splice(insertIndex, 0, rule);
+    config.rules.splice.apply(config.rules, [insertIndex, 0].concat(newRules));
     return config;
 }
 ```
@@ -87,6 +115,8 @@ function main(config) {
 ## 输出文件
 
 ```text
+dist/reject-domains.list
+dist/reject-misc.list
 dist/reject.list
 dist/reject-expanded.yaml
 dist/reject-with-action-part-1.list
@@ -100,17 +130,20 @@ dist/build-report.json
 
 ## 规则来源
 
-来源配置在 [sources.yaml](sources.yaml)。当前来源接近服务器使用的 reject 规则模型：以公开聚合规则为主，再补充几个常用 reject 源。构建时不应用本仓库白名单，也不把上游 `@@` 例外转换为放行规则。
+来源配置在 [sources.yaml](sources.yaml)。构建时不应用本仓库白名单，也不把上游 `@@` 例外转换为放行规则。
 
 | 名称 | 来源网站 | 原始规则 URL |
 | --- | --- | --- |
 | 217heidai adblockfilters | [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters) | <https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml> |
-| Loyalsoldier reject | [Loyalsoldier/clash-rules](https://github.com/Loyalsoldier/clash-rules) | <https://raw.githubusercontent.com/Loyalsoldier/clash-rules/release/reject.txt> |
 | BlackMatrix7 Privacy | [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) | <https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml> |
-| anti-AD | [privacy-protection-tools/anti-AD](https://github.com/privacy-protection-tools/anti-AD) | <https://raw.githubusercontent.com/privacy-protection-tools/anti-AD/master/anti-ad-clash.yaml> |
-| yhosts | [VeleSila/yhosts](https://github.com/VeleSila/yhosts) | <https://raw.githubusercontent.com/VeleSila/yhosts/master/hosts> |
 
-请自行确认各上游项目的许可证和使用条款。
+之前还引用过 Loyalsoldier `reject.txt`、anti-AD、yhosts，现已移除：
+
+- **yhosts** 已被 GitHub 标记 archived，作者自 2025-03-05 起未再更新，内容只会越来越旧。
+- **anti-AD** 存在有据可查的信任争议，参见 [`Mosney/anti-anti-AD`](https://github.com/Mosney/anti-anti-AD)（指控其夹带超出"广告/追踪"范围的域名）；我们目前实际使用的 217heidai/adblockfilters 自己的 README 也写明"不再引用 anti-AD、yhosts"，原因正是这个。
+- **Loyalsoldier reject.txt** 和 217heidai 高度重叠（去重后边际贡献约 7%），且和 anti-AD/yhosts 一起去掉后剩下的 217heidai 单一源已经是这个生态里覆盖最全、更新最勤（每 8 小时）的选择，没有找到明显更好的补充源。
+
+请自行确认上游项目的许可证和使用条款。
 
 ## 构建逻辑
 
