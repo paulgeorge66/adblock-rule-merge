@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import shutil
@@ -249,17 +250,15 @@ def parse_upstream_exception_rules(text: str) -> list[ParsedRule]:
 def prune_shadowed_rules(rules: Iterable[ParsedRule]) -> list[ParsedRule]:
     unique = {(rule.rule_type, rule.value): rule for rule in rules}
     rules_by_type = list(unique.values())
-    suffixes = sorted(
-        (rule.value for rule in rules_by_type if rule.rule_type == "DOMAIN-SUFFIX"),
-        key=lambda value: value.count("."),
-        reverse=True,
-    )
+    suffix_set = {rule.value for rule in rules_by_type if rule.rule_type == "DOMAIN-SUFFIX"}
     keywords = [rule.value for rule in rules_by_type if rule.rule_type == "DOMAIN-KEYWORD"]
 
     pruned: list[ParsedRule] = []
     for rule in rules_by_type:
         value = rule.value
-        if rule.rule_type == "DOMAIN" and _matches_suffix(value, suffixes):
+        if rule.rule_type == "DOMAIN" and _matches_suffix(value, suffix_set):
+            continue
+        if rule.rule_type == "DOMAIN-SUFFIX" and _has_parent_suffix(value, suffix_set):
             continue
         if rule.rule_type in {"DOMAIN", "DOMAIN-SUFFIX"} and any(keyword in value for keyword in keywords):
             continue
@@ -275,12 +274,57 @@ def prune_shadowed_rules(rules: Iterable[ParsedRule]) -> list[ParsedRule]:
 
 
 def _matches_suffix(value: str, suffixes: Iterable[str]) -> bool:
-    return any(value == suffix or value.endswith(f".{suffix}") for suffix in suffixes)
+    suffix_set = suffixes if isinstance(suffixes, set) else set(suffixes)
+    labels = value.split(".")
+    return any(".".join(labels[index:]) in suffix_set for index in range(len(labels)))
 
 
-def build_rules_from_sources(sources: Iterable[dict]) -> tuple[list[ParsedRule], dict]:
+def _has_parent_suffix(value: str, suffixes: Iterable[str]) -> bool:
+    suffix_set = suffixes if isinstance(suffixes, set) else set(suffixes)
+    labels = value.split(".")
+    return any(".".join(labels[index:]) in suffix_set for index in range(1, len(labels)))
+
+
+def load_previous_source_counts(report_path: Path) -> dict[str, int]:
+    if not report_path.exists():
+        return {}
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        return {
+            name: int(details["parsed_rules"])
+            for name, details in report.get("sources", {}).items()
+            if isinstance(details, dict) and isinstance(details.get("parsed_rules"), int)
+        }
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def validate_source_count(source: dict, parsed_count: int, previous_count: int | None = None) -> None:
+    name = source["name"]
+    min_rules = int(source.get("min_rules", 1))
+    if parsed_count < min_rules:
+        raise RuntimeError(f"source {name} produced {parsed_count} rules; minimum is {min_rules}")
+
+    if previous_count is None or previous_count <= 0:
+        return
+    max_drop_ratio = float(source.get("max_drop_ratio", 0.35))
+    if not 0 <= max_drop_ratio < 1:
+        raise ValueError(f"source {name} max_drop_ratio must be between 0 and 1")
+    minimum_from_previous = math.ceil(previous_count * (1 - max_drop_ratio))
+    if parsed_count < minimum_from_previous:
+        raise RuntimeError(
+            f"source {name} dropped from {previous_count} to {parsed_count} rules; "
+            f"maximum allowed drop is {max_drop_ratio:.0%}"
+        )
+
+
+def build_rules_from_sources(
+    sources: Iterable[dict],
+    previous_source_counts: dict[str, int] | None = None,
+) -> tuple[list[ParsedRule], dict]:
     collected: list[ParsedRule] = []
     source_report: dict[str, dict] = {}
+    previous_source_counts = previous_source_counts or {}
     for source in sources:
         name = source["name"]
         url = source["url"]
@@ -289,6 +333,7 @@ def build_rules_from_sources(sources: Iterable[dict]) -> tuple[list[ParsedRule],
         except Exception as exc:
             raise RuntimeError(f"failed to fetch source {name}: {url}") from exc
         parsed = parse_rules(text)
+        validate_source_count(source, len(parsed), previous_source_counts.get(name))
         collected.extend(parsed)
         source_report[name] = {
             "url": url,
@@ -426,7 +471,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     sources = load_sources(args.sources)
-    rules, report = build_rules_from_sources(sources)
+    previous_source_counts = load_previous_source_counts(args.report)
+    rules, report = build_rules_from_sources(sources, previous_source_counts)
     write_outputs(
         rules,
         report,

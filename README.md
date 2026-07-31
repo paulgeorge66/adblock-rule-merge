@@ -126,7 +126,7 @@ dist/reject-with-action-part-4.list
 dist/build-report.json
 ```
 
-`dist/build-report.json` 会记录各来源解析数量和最终规则数量。
+`dist/build-report.json` 会记录各来源解析数量和最终规则数量。构建会检查来源的最低规则数，并与上一次报告比较；来源为空、低于下限或单次下降超过 35% 时直接失败，不覆盖最后一份正常产物。
 
 ## 规则来源
 
@@ -135,13 +135,12 @@ dist/build-report.json
 | 名称 | 来源网站 | 原始规则 URL |
 | --- | --- | --- |
 | 217heidai adblockfilters | [217heidai/adblockfilters](https://github.com/217heidai/adblockfilters) | <https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml> |
-| BlackMatrix7 Privacy | [blackmatrix7/ios_rule_script](https://github.com/blackmatrix7/ios_rule_script) | <https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/master/rule/Clash/Privacy/Privacy.yaml> |
-
-之前还引用过 Loyalsoldier `reject.txt`、anti-AD、yhosts，现已移除：
+之前还引用过 BlackMatrix7 Privacy、Loyalsoldier `reject.txt`、anti-AD、yhosts，现已移除：
 
 - **yhosts** 已被 GitHub 标记 archived，作者自 2025-03-05 起未再更新，内容只会越来越旧。
 - **anti-AD** 存在有据可查的信任争议，参见 [`Mosney/anti-anti-AD`](https://github.com/Mosney/anti-anti-AD)（指控其夹带超出"广告/追踪"范围的域名）；我们目前实际使用的 217heidai/adblockfilters 自己的 README 也写明"不再引用 anti-AD、yhosts"，原因正是这个。
 - **Loyalsoldier reject.txt** 和 217heidai 高度重叠（去重后边际贡献约 7%），且和 anti-AD/yhosts 一起去掉后剩下的 217heidai 单一源已经是这个生态里覆盖最全、更新最勤（每 8 小时）的选择，没有找到明显更好的补充源。
+- **BlackMatrix7 Privacy** 的声明规则数与实际 payload 长期不一致，曾出现只剩 20 条的截断结果，因此不再作为可靠输入。
 
 请自行确认上游项目的许可证和使用条款。
 
@@ -153,6 +152,7 @@ dist/build-report.json
 - 提取 hosts 条目和纯域名行
 - 规范化为 `DOMAIN`、`DOMAIN-SUFFIX`、`DOMAIN-KEYWORD`、`IP-CIDR`、`IP-CIDR6`
 - 移除重复规则和被覆盖的规则
+- 检查关键来源的最低数量和相对上次构建的异常跌幅
 - 输出规则文件和构建报告
 
 不支持网页元素隐藏规则、scriptlet 规则、带站点作用域的例外规则和其他非域名类广告过滤语法。

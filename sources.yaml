@@ -15,3 +15,5 @@ sources:
   # entries) -- the same upstream truncation bug seen in bm7's Apple.yaml.
   - name: custom_adblock
     url: https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml
+    min_rules: 150000
+    max_drop_ratio: 0.35
