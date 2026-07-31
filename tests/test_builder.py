@@ -14,6 +14,7 @@ from adblock_merge.builder import (
     render_expanded_rules_yaml,
     render_rule_provider_text,
     split_rules_by_behavior,
+    validate_source_count,
 )
 
 
@@ -153,6 +154,28 @@ plain-ad.example.test
                 ParsedRule("DOMAIN-KEYWORD", "tracker"),
             ],
         )
+
+    def test_prune_shadowed_rules_removes_child_suffix(self):
+        self.assertEqual(
+            prune_shadowed_rules(
+                [
+                    ParsedRule("DOMAIN-SUFFIX", "example.com"),
+                    ParsedRule("DOMAIN-SUFFIX", "ads.example.com"),
+                ]
+            ),
+            [ParsedRule("DOMAIN-SUFFIX", "example.com")],
+        )
+
+    def test_source_guard_rejects_too_few_rules(self):
+        with self.assertRaisesRegex(RuntimeError, "minimum is 2"):
+            validate_source_count({"name": "fixture", "min_rules": 2}, 1)
+
+    def test_source_guard_rejects_large_drop(self):
+        with self.assertRaisesRegex(RuntimeError, "dropped from 100 to 60"):
+            validate_source_count({"name": "fixture", "max_drop_ratio": 0.35}, 60, 100)
+
+    def test_source_guard_accepts_normal_variation(self):
+        validate_source_count({"name": "fixture", "min_rules": 5, "max_drop_ratio": 0.35}, 80, 100)
 
     def test_render_rule_provider_text(self):
         rendered = render_rule_provider_text(
