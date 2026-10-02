@@ -4,3 +4,7 @@ __pycache__/
 .venv/
 .upstream-217heidai/
 docs/
+
+.cache/
+mihomo
+mihomo.gz

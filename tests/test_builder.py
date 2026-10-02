@@ -96,10 +96,7 @@ payload:
   - DOMAIN-SUFFIX,ads.example.com
   - DOMAIN,track.example.com
   - '+.banner.example.net'
-127.0.0.1 hosts-ad.example.org
-0.0.0.0 hosts-track.example.org
-plain-ad.example.test
-@@||allowed.example.com^
+  - '# valid payload comment'
 """
         self.assertEqual(
             parse_rules(text),
@@ -220,8 +217,8 @@ plain-ad.example.test
             "payload:\n"
             "  - DOMAIN-KEYWORD,tracker\n"
             "  - DOMAIN-SUFFIX,example.com\n"
-            "@@||example.com^\n"
-            "@@||scoped.example.com^$domain=site.example\n"
+            "  - '@@||example.com^'\n"
+            "  - '@@||scoped.example.com^$domain=site.example'\n"
         )
         rules, report = build_rules_from_sources(
             [

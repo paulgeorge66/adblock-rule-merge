@@ -3,13 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import math
-import os
 import re
-import shutil
-import subprocess
 import sys
-import time
-import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+from .source_io import SourceFetcher, normalize_domain, normalize_cidr, payload_items, previous_counts, validate_rules
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -64,69 +61,8 @@ class ParsedRule:
         return f"{self.rule_type},{self.value}"
 
 
-def fetch_text(url: str, retries: int = 3) -> str:
-    last_error: Exception | None = None
-    for attempt in range(1, retries + 1):
-        try:
-            request = urllib.request.Request(
-                url,
-                headers={
-                    "User-Agent": "adblock-rule-merge/0.1 (+https://github.com/paulgeorge66/adblock-rule-merge)",
-                    "Connection": "close",
-                },
-            )
-            with urllib.request.urlopen(request, timeout=60) as response:
-                return response.read().decode("utf-8", errors="replace")
-        except Exception as exc:
-            last_error = exc
-            if attempt == retries:
-                break
-            time.sleep(attempt)
-    curl = shutil.which("curl") or shutil.which("curl.exe")
-    if curl:
-        try:
-            curl_command = [curl, "-L", "--fail", "--retry", "3", "--retry-delay", "2", url]
-            if os.name == "nt":
-                curl_command.insert(1, "--ssl-no-revoke")
-            result = subprocess.run(
-                curl_command,
-                check=True,
-                capture_output=True,
-                timeout=90,
-            )
-            return result.stdout.decode("utf-8", errors="replace")
-        except Exception as exc:
-            last_error = exc
-    assert last_error is not None
-    raise last_error
-
-
 def extract_payload_lines(text: str) -> list[str]:
-    payload: list[str] = []
-    in_payload = False
-    for raw_line in text.splitlines():
-        line = raw_line.rstrip()
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if not in_payload:
-            if stripped == "payload:":
-                in_payload = True
-                continue
-            if stripped.startswith("#"):
-                continue
-            payload.append(_unquote_list_item(stripped))
-            continue
-        if not stripped.startswith("- "):
-            continue
-        payload.append(_unquote_list_item(stripped[2:].strip()))
-    return payload
-
-
-def _unquote_list_item(item: str) -> str:
-    if (item.startswith("'") and item.endswith("'")) or (item.startswith('"') and item.endswith('"')):
-        return item[1:-1]
-    return item
+    return payload_items(text, "auto")
 
 
 def normalize_rule_line(item: str) -> ParsedRule | None:
@@ -136,13 +72,13 @@ def normalize_rule_line(item: str) -> ParsedRule | None:
     if "##" in item or "#?#" in item or "#@#" in item or "#$#" in item or "#%#" in item:
         return None
     if item.startswith("+."):
-        return ParsedRule("DOMAIN-SUFFIX", item[2:].strip().lower())
+        return ParsedRule("DOMAIN-SUFFIX", normalize_domain(item[2:]))
     if item.startswith("||"):
         return _parse_abp_domain_rule(item)
     if CIDR_V4_RE.match(item):
-        return ParsedRule("IP-CIDR", item)
+        return ParsedRule("IP-CIDR", normalize_cidr(item, 4))
     if CIDR_V6_RE.match(item):
-        return ParsedRule("IP-CIDR6", item.lower())
+        return ParsedRule("IP-CIDR6", normalize_cidr(item, 6))
     host_rule = _parse_hosts_line(item)
     if host_rule is not None:
         return host_rule
@@ -157,7 +93,13 @@ def normalize_rule_line(item: str) -> ParsedRule | None:
     rule_type, value = parts[0].upper(), parts[1]
     if rule_type not in SUPPORTED_TYPES:
         return None
-    if rule_type.startswith("DOMAIN"):
+    if rule_type in DOMAIN_TYPES:
+        value = normalize_domain(value)
+    elif rule_type in {"IP-CIDR", "IP-CIDR6"}:
+        value = normalize_cidr(value, 4 if rule_type == "IP-CIDR" else 6)
+    elif rule_type == "DOMAIN-KEYWORD":
+        if not value or any(c in value for c in ("\r", "\n", ",", chr(34), chr(39))):
+            raise ValueError("invalid keyword")
         value = value.lower()
     return ParsedRule(rule_type, value)
 
@@ -229,12 +171,14 @@ def _clean_domain(value: str) -> str | None:
     return None
 
 
-def parse_rules(text: str) -> list[ParsedRule]:
+def parse_rules(text: str, parser: str = "auto") -> list[ParsedRule]:
     rules: list[ParsedRule] = []
-    for item in extract_payload_lines(text):
+    for item in payload_items(text, parser):
         rule = normalize_rule_line(item)
         if rule is not None:
             rules.append(rule)
+        elif parser == "classical_payload" and item and not item.startswith(("#", "!")):
+            raise ValueError("unsupported classical rule")
     return rules
 
 
@@ -285,20 +229,6 @@ def _has_parent_suffix(value: str, suffixes: Iterable[str]) -> bool:
     return any(".".join(labels[index:]) in suffix_set for index in range(1, len(labels)))
 
 
-def load_previous_source_counts(report_path: Path) -> dict[str, int]:
-    if not report_path.exists():
-        return {}
-    try:
-        report = json.loads(report_path.read_text(encoding="utf-8"))
-        return {
-            name: int(details["parsed_rules"])
-            for name, details in report.get("sources", {}).items()
-            if isinstance(details, dict) and isinstance(details.get("parsed_rules"), int)
-        }
-    except (OSError, ValueError, TypeError):
-        return {}
-
-
 def validate_source_count(source: dict, parsed_count: int, previous_count: int | None = None) -> None:
     name = source["name"]
     min_rules = int(source.get("min_rules", 1))
@@ -321,24 +251,20 @@ def validate_source_count(source: dict, parsed_count: int, previous_count: int |
 def build_rules_from_sources(
     sources: Iterable[dict],
     previous_source_counts: dict[str, int] | None = None,
+    cache_dir: Path | None = None,
 ) -> tuple[list[ParsedRule], dict]:
     collected: list[ParsedRule] = []
     source_report: dict[str, dict] = {}
     previous_source_counts = previous_source_counts or {}
-    for source in sources:
-        name = source["name"]
-        url = source["url"]
-        try:
-            text = fetch_text(url)
-        except Exception as exc:
-            raise RuntimeError(f"failed to fetch source {name}: {url}") from exc
-        parsed = parse_rules(text)
-        validate_source_count(source, len(parsed), previous_source_counts.get(name))
+    sources = list(sources)
+    fetcher = SourceFetcher(cache_dir or ROOT / ".cache" / "sources")
+    def load(source):
+        return fetcher.load(source, lambda text: parse_rules(text, source.get("parser", "auto")), lambda rules: validate_rules(source, rules, previous_source_counts.get(source["name"])))
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(load, sources))
+    for source, (parsed, metadata) in zip(sources, results):
         collected.extend(parsed)
-        source_report[name] = {
-            "url": url,
-            "parsed_rules": len(parsed),
-        }
+        source_report[source["name"]] = {"url": source["url"], "parsed_rules": len(parsed), **metadata}
 
     rules = prune_shadowed_rules(collected)
     report = {
@@ -468,11 +394,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--expanded-output", type=Path, default=DEFAULT_EXPANDED_OUTPUT)
     parser.add_argument("--action-part-prefix", type=Path, default=DEFAULT_ACTION_PART_PREFIX)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--cache-dir", type=Path, default=ROOT / ".cache" / "sources")
     args = parser.parse_args(argv)
 
     sources = load_sources(args.sources)
-    previous_source_counts = load_previous_source_counts(args.report)
-    rules, report = build_rules_from_sources(sources, previous_source_counts)
+    previous_source_counts = previous_counts(args.report, sources)
+    rules, report = build_rules_from_sources(sources, previous_source_counts, args.cache_dir)
     write_outputs(
         rules,
         report,

@@ -1,19 +1,12 @@
 sources:
-  # custom_adblock (217heidai/adblockfilters) is a well-maintained meta-aggregator
-  # updated every ~8h; it already pulls from AdGuard's FiltersRegistry and similar
-  # upstreams, and its own maintainer has already dropped anti-AD and yhosts as
-  # unreliable (see README + https://github.com/Mosney/anti-anti-AD for the
-  # documented anti-AD dispute). loyal_reject/anti_ad/yhosts were removed here for
-  # the same reasons: yhosts is archived/stale since 2025-03-05, anti_ad has the
-  # anti-anti-AD credibility dispute, and loyal_reject's marginal contribution
-  # after dedup against custom_adblock was the lowest of the three (~7% of final
-  # total) with no compensating quality signal. No whitelist is applied here.
-  #
-  # bm7_privacy (blackmatrix7's "Privacy" category) was removed: its header
-  # claims ~39,936 rules but the payload currently only ships 20 (9
-  # DOMAIN-KEYWORD + 11 IP-CIDR, zero of the claimed ~39,897 DOMAIN-SUFFIX
-  # entries) -- the same upstream truncation bug seen in bm7's Apple.yaml.
+  # Keep the selected single-source policy, with no additional allowlist.
+  # BlackMatrix7 Privacy normal/domain files are intentionally split;
+  # a small normal payload alone does not indicate upstream truncation.
   - name: custom_adblock
     url: https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml
+    parser: domain_payload
+    max_bytes: 20000000
+    max_rules: 750000
+    required_types: [DOMAIN-SUFFIX]
     min_rules: 150000
     max_drop_ratio: 0.35
