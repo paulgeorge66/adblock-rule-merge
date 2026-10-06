@@ -2,19 +2,19 @@
   "schema": 1,
   "artifacts": {
     "reject-domains.list": {
-      "bytes": 5066342,
-      "sha256": "c017e9e2cbd586b1e45b8158fcd752a76d9a49c9cd34a0ebcdec2e6d2c766298",
-      "rules": 222994
+      "bytes": 5096168,
+      "sha256": "d4291993e28b5e3a1ff944655e5d9374cef636e2b2920e550757a3c7bb21d84d",
+      "rules": 223651
     },
     "reject-domains.mrs": {
-      "bytes": 2104470,
-      "sha256": "0585fc9e8f6da23770cc8d2bc435c0601b58edd4c2ec814dc37e8d30b554979d",
+      "bytes": 2120523,
+      "sha256": "e33abe742855b14c14ebb5398d7b39ec667f44cdfd52d275e9558e9f16e64515",
       "rules": null
     },
     "reject-expanded.yaml": {
-      "bytes": 10195204,
-      "sha256": "a6d5607d83298b0e42514bb04d073afe51bed858128926b7d75f8f4ccdce2149",
-      "rules": 222994
+      "bytes": 10240141,
+      "sha256": "0599f4470439346aa9fe88f9658b5aba214969803b69c0cef5beee2cb1d1e156",
+      "rules": 223651
     },
     "reject-misc.list": {
       "bytes": 0,
@@ -22,29 +22,29 @@
       "rules": 0
     },
     "reject-with-action-part-1.list": {
-      "bytes": 2325782,
-      "sha256": "a69d0c48b2d7021078dc57c15f9a45f025d1e44f74578faf1764081da6dd6cbe",
-      "rules": 55383
+      "bytes": 2336367,
+      "sha256": "92316594c468eeac8bc4fff135b6bdddecefbe030ea8b1da9026978d959c9786",
+      "rules": 55513
     },
     "reject-with-action-part-2.list": {
-      "bytes": 2325770,
-      "sha256": "325dfbe8cfd16c46a4ea50616a27e312adcb62e06defd6d6610f6f24326ae419",
-      "rules": 55747
+      "bytes": 2336375,
+      "sha256": "6906b29785f58ec8ec9a9925c0802e17b4f5cd159efc01204811096853aebbb0",
+      "rules": 55900
     },
     "reject-with-action-part-3.list": {
-      "bytes": 2325777,
-      "sha256": "3c7dac943d7537c83bc2236465866950d20f3a876e038c08bd3fc5152ae93454",
-      "rules": 55606
+      "bytes": 2336364,
+      "sha256": "29643f910b539dce5cda1b03d9406c0a417af6567c72899522c1285502ec5d3a",
+      "rules": 55782
     },
     "reject-with-action-part-4.list": {
-      "bytes": 2325899,
-      "sha256": "a1aa419e4bf9ca175f6e9df3897dd8ab38442be4ebc4d82fe7850f25638f5898",
-      "rules": 56258
+      "bytes": 2336431,
+      "sha256": "f1d2f315d9d55b8482aa29020207de8677bac6809ea544af937463f31b6c3afe",
+      "rules": 56456
     },
     "reject.list": {
-      "bytes": 7742270,
-      "sha256": "f65cb24f3a711534775236efc0c058095f21d69344bc96b7f97febd356010e6e",
-      "rules": 222994
+      "bytes": 7779980,
+      "sha256": "c4428812e58afbf6437ed3cb1194604bcc1ceef4575a96b60467577425878614",
+      "rules": 223651
     }
   },
   "degraded": false
