@@ -2,39 +2,39 @@
   "sources": {
     "custom_adblock": {
       "url": "https://raw.githubusercontent.com/217heidai/adblockfilters/main/rules/adblockmihomo.yaml",
-      "parsed_rules": 234532,
+      "parsed_rules": 235257,
       "fetch_status": "validated"
     }
   },
-  "total_rules": 234526,
+  "total_rules": 235251,
   "behavior_split": {
-    "domains": 234526,
+    "domains": 235251,
     "misc": 0
   },
   "expanded_rules": {
     "path": "dist/reject-expanded.yaml",
-    "rules": 234526
+    "rules": 235251
   },
   "action_rule_parts": [
     {
       "path": "dist/reject-with-action-part-1.list",
-      "rules": 58222,
-      "bytes": 2453952
+      "rules": 58384,
+      "bytes": 2460837
     },
     {
       "path": "dist/reject-with-action-part-2.list",
-      "rules": 58607,
-      "bytes": 2453925
+      "rules": 58828,
+      "bytes": 2460838
     },
     {
       "path": "dist/reject-with-action-part-3.list",
-      "rules": 58493,
-      "bytes": 2453955
+      "rules": 58681,
+      "bytes": 2460863
     },
     {
       "path": "dist/reject-with-action-part-4.list",
-      "rules": 59204,
-      "bytes": 2454078
+      "rules": 59358,
+      "bytes": 2460929
     }
   ],
   "validation": {
